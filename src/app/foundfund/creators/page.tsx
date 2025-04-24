@@ -1,16 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getCurrentUser, getFundItemsByCreator } from '@/data/mockData';
+import { getCurrentUser, getCampaignsByCreator } from '@/lib/api';
+import { FundItem, User } from '@/types';
 import CampaignCard from '@/components/CampaignCard';
 
 export default function CreatorsPage() {
-  // In a real app, we would get the current user from authentication
-  const currentUser = getCurrentUser();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userCampaigns, setUserCampaigns] = useState<FundItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get campaigns for the current user
-  const userCampaigns = getFundItemsByCreator(currentUser.id);
+  // Fetch current user and their campaigns
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Get current user
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+
+        // Get campaigns for the current user
+        if (user && user.id) {
+          const campaigns = await getCampaignsByCreator(user.id);
+          setUserCampaigns(campaigns || []);
+        } else {
+          setUserCampaigns([]);
+        }
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load your campaigns. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -28,8 +56,16 @@ export default function CreatorsPage() {
         </Link>
       </div>
 
-      {userCampaigns.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+      {loading ? (
+        <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xl text-muted-foreground">Loading your campaigns...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xl text-muted-foreground">{error}</p>
+        </div>
+      ) : userCampaigns.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-7xl mx-auto">
           {userCampaigns.map(campaign => (
             <div key={campaign.id} className="flex justify-center">
               <div className="w-full max-w-md">
@@ -39,7 +75,7 @@ export default function CreatorsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border rounded-xl" style={{ borderColor: 'var(--border)' }}>
+        <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-xl font-medium text-card-foreground mb-3">No Campaigns Yet</h3>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
             You haven't created any funding campaigns yet. Get started by creating your first campaign!

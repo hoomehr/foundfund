@@ -1,18 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { fundItems, getContributionsByFundItem, users } from '@/data/mockData';
 
 interface BackersPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function BackersPage({ params }: BackersPageProps) {
   const router = useRouter();
-  const { id } = params;
+
+  // Unwrap params using React.use()
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
 
   // Find the campaign in our mock data
   const campaign = fundItems.find(item => item.id === id);

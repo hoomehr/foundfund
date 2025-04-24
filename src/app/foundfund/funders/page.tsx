@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { fundItems } from '@/data/mockData';
-import { Category, FundingStatus } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { Category, FundingStatus, FundItem } from '@/types';
+import { getCampaigns, getCategories, getFundingStatuses } from '@/lib/api';
 import FundItemCard from '@/components/FundItemCard';
 import FilterBar from '@/components/FilterBar';
 
@@ -11,6 +11,28 @@ export default function FundersPage() {
   const [selectedStatus, setSelectedStatus] = useState<FundingStatus | 'all'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'mostFunded' | 'endingSoon'>('newest');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [fundItems, setFundItems] = useState<FundItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch fund items from the API
+  useEffect(() => {
+    const fetchFundItems = async () => {
+      try {
+        setLoading(true);
+        const items = await getCampaigns();
+        setFundItems(items || []);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching fund items:', err);
+        setError('Failed to load projects. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFundItems();
+  }, []);
 
   // Filter and sort the fund items
   const filteredItems = fundItems.filter(item => {
@@ -64,14 +86,18 @@ export default function FundersPage() {
     // In a real app, this would make an API call to process the contribution
     alert(`Contributing $${amount} to project ${fundItemId}`);
 
-    // For demo purposes, we could update the mock data here
-    // This would be replaced with a proper state update in a real app
-    const itemIndex = fundItems.findIndex(item => item.id === fundItemId);
-    if (itemIndex !== -1) {
-      fundItems[itemIndex].currentAmount += amount;
-      // Force a re-render
-      setSortBy(prev => prev);
-    }
+    // For demo purposes, update the local state
+    setFundItems(prevItems => {
+      return prevItems.map(item => {
+        if (item.id === fundItemId) {
+          return {
+            ...item,
+            currentAmount: item.currentAmount + amount
+          };
+        }
+        return item;
+      });
+    });
   };
 
   return (
@@ -92,8 +118,16 @@ export default function FundersPage() {
         onTagsChange={setSelectedTags}
       />
 
-      {sortedItems.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {loading ? (
+        <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xl text-muted-foreground">Loading projects...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xl text-muted-foreground">{error}</p>
+        </div>
+      ) : sortedItems.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {sortedItems.map(item => (
             <FundItemCard
               key={item.id}
