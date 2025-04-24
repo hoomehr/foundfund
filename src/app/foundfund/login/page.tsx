@@ -52,26 +52,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 mt-16">
       <div className="w-full max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-card border rounded-xl overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-card border rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.25),_0_0_80px_rgba(255,255,255,0.15)]" style={{ borderColor: 'var(--border)' }}>
           {/* Left side - Image */}
-          <div className="relative h-full min-h-[300px] md:min-h-[500px] bg-gradient-to-br from-gray-900 to-black">
-            <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center p-8 text-center">
-              <h1 className="text-4xl font-bold mb-4 text-white">FoundFund</h1>
-              <p className="text-lg text-white/80 mb-6">Connect with creators and bring innovative ideas to life</p>
-              <div className="w-16 h-1 bg-white/50 rounded-full mb-6"></div>
-              <p className="text-white/70">
-                Discover exciting projects and support creators in bringing their visions to reality.
-              </p>
-            </div>
-            <div
-              className="absolute inset-0 z-[-1]"
-              style={{
-                backgroundImage: 'url(https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                opacity: 0.2
-              }}
-            ></div>
+          <div className="relative h-full min-h-[300px] md:min-h-[500px] overflow-hidden">
+            <img
+              src="/login.jpg"
+              alt="Abstract Circular Design"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           </div>
 
           {/* Right side - Login form */}
@@ -97,7 +85,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-background border border-input rounded-md px-3 py-2 text-card-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full bg-background border border-input rounded-md px-3 py-2 text-card-foreground focus:outline-none focus:ring-2 focus:ring-white/50 focus:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all"
                   required
                 />
               </div>
@@ -111,7 +99,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-background border border-input rounded-md px-3 py-2 text-card-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-full bg-background border border-input rounded-md px-3 py-2 text-card-foreground focus:outline-none focus:ring-2 focus:ring-white/50 focus:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all"
                   required
                 />
               </div>
@@ -120,7 +108,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] disabled:opacity-70"
+                  className="w-full bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-all shadow-[0_0_25px_rgba(255,255,255,0.6),_0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.8),_0_0_50px_rgba(255,255,255,0.4)] disabled:opacity-70"
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </button>

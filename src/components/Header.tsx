@@ -9,7 +9,9 @@ export default function Header() {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return pathname.startsWith(path) ? 'text-white' : 'text-muted-foreground hover:text-white';
+    return pathname.startsWith(path)
+      ? 'text-white font-medium text-shadow-green'
+      : 'text-muted-foreground hover:text-white';
   };
 
   return (

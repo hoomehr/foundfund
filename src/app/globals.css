@@ -79,3 +79,13 @@ body {
     color: var(--foreground);
   }
 }
+
+/* Custom utilities */
+.text-shadow-green {
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.6), 0 0 12px rgba(74, 222, 128, 0.4);
+}
+
+/* Funding phase indicators with green glow */
+.funding-phase-indicator {
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5), 0 0 20px rgba(74, 222, 128, 0.3);
+}

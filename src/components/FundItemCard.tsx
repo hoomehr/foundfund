@@ -57,7 +57,7 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
               <CardItem translateZ="40" className="text-xl font-semibold text-card-foreground">
                 {fundItem.name}
               </CardItem>
-              <CardItem translateZ="30" className="bg-black/30 text-green-400 text-xs px-2 py-1 rounded-md border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.3)]">
+              <CardItem translateZ="30" className="bg-black/30 text-green-400 text-xs px-2 py-1 rounded-md border border-green-500/30 funding-phase-indicator">
                 {getFundingPhase(fundItem)}
               </CardItem>
             </div>
@@ -87,12 +87,11 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
                 <span className="text-card-foreground">${fundItem.currentAmount.toLocaleString()} raised</span>
                 <span className="text-muted-foreground">${fundItem.fundingGoal.toLocaleString()} goal</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2 shadow-inner">
+              <div className="w-full bg-gray-900 rounded-full h-2 shadow-inner">
                 <div
-                  className="bg-green-500 h-2 rounded-full"
+                  className="bg-green-500 h-2 rounded-full funding-phase-indicator"
                   style={{
                     width: `${progressPercentage}%`,
-                    boxShadow: '0 0 10px rgba(74, 222, 128, 0.7), 0 0 5px rgba(74, 222, 128, 0.5)'
                   }}
                 ></div>
               </div>
