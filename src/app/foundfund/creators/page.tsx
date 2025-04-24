@@ -2,32 +2,36 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getCurrentUser, getCampaignsByCreator } from '@/lib/api';
+import { getCampaignsByCreator } from '@/lib/api';
 import { FundItem, User } from '@/types';
 import CampaignCard from '@/components/CampaignCard';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CreatorsPage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [userCampaigns, setUserCampaigns] = useState<FundItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch current user and their campaigns
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/foundfund/login?callbackUrl=/foundfund/creators');
+    }
+  }, [isAuthenticated, router]);
+
+  // Fetch user campaigns
   useEffect(() => {
     const fetchData = async () => {
+      if (!isAuthenticated || !user?.id) return;
+
       try {
         setLoading(true);
-        // Get current user
-        const user = await getCurrentUser();
-        setCurrentUser(user);
-
-        // Get campaigns for the current user
-        if (user && user.id) {
-          const campaigns = await getCampaignsByCreator(user.id);
-          setUserCampaigns(campaigns || []);
-        } else {
-          setUserCampaigns([]);
-        }
+        console.log('Fetching campaigns for user:', user.id);
+        const campaigns = await getCampaignsByCreator(user.id);
+        setUserCampaigns(campaigns || []);
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -38,7 +42,7 @@ export default function CreatorsPage() {
     };
 
     fetchData();
-  }, []);
+  }, [user, isAuthenticated]);
 
   return (
     <div className="container mx-auto px-4 py-12">

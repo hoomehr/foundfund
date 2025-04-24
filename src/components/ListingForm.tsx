@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Category, FundItem } from '@/types';
-import { getCategories } from '@/data/mockData';
+import { getCategories } from '@/lib/api';
 
 interface ListingFormProps {
   initialData?: Partial<FundItem>;
   onSubmit: (formData: Partial<FundItem>) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
-export default function ListingForm({ initialData, onSubmit, onCancel }: ListingFormProps) {
+export default function ListingForm({ initialData, onSubmit, onCancel, isLoading = false }: ListingFormProps) {
   const [formData, setFormData] = useState<Partial<FundItem>>({
     name: '',
     description: '',
@@ -159,15 +160,22 @@ export default function ListingForm({ initialData, onSubmit, onCancel }: Listing
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-2.5 text-sm font-medium text-black bg-white rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
+          disabled={isLoading}
+          className="px-5 py-2.5 text-sm font-medium text-black bg-white rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] disabled:opacity-70"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="px-5 py-2.5 text-sm font-medium text-black bg-white rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
+          disabled={isLoading}
+          className="px-5 py-2.5 text-sm font-medium text-black bg-white rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] disabled:opacity-70"
         >
-          {initialData?.id ? 'Update Campaign' : 'Create Campaign'}
+          {isLoading
+            ? 'Processing...'
+            : initialData?.id
+              ? 'Update Campaign'
+              : 'Create Campaign'
+          }
         </button>
       </div>
     </form>

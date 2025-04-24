@@ -1,13 +1,27 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase, User } from '@/models';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     console.log('GET /api/users - Starting');
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const email = searchParams.get('email');
+
+    console.log('GET /api/users - Query params:', { email });
+
     await connectToDatabase();
     console.log('GET /api/users - Connected to database');
 
-    const users = await User.find({}).lean();
+    // Build query
+    const query: any = {};
+    if (email) {
+      query.email = email;
+    }
+
+    console.log('GET /api/users - Executing query:', JSON.stringify(query));
+    const users = await User.find(query).lean();
     console.log('GET /api/users - Found users:', users ? users.length : 0);
 
     // Handle case where no users are found

@@ -95,11 +95,23 @@ export async function getCampaigns(params?: {
 }
 
 export async function getCampaignById(id: string): Promise<FundItem> {
-  const response = await fetch(`${API_BASE}/campaigns/${id}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch campaign with id ${id}`);
+  try {
+    console.log(`Fetching campaign with id ${id}`);
+    const response = await fetch(`${API_BASE}/campaigns/${id}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error fetching campaign ${id}:`, errorData);
+      throw new Error(`Failed to fetch campaign with id ${id}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully fetched campaign ${id}`);
+    return data;
+  } catch (error) {
+    console.error(`Error in getCampaignById(${id}):`, error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function getCampaignsByCreator(creatorId: string): Promise<FundItem[]> {

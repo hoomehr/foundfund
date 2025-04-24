@@ -87,6 +87,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  password?: string; // Optional in the type since we don't always want to expose it
   name: string;
   bio?: string;
   avatarUrl?: string;

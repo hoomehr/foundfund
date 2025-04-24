@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState, use } from 'react'
+import React, { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { fundItems } from '@/data/mockData'
+import { getCampaignById } from '@/lib/api'
 import { FundItem } from '@/types'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Helper function to determine funding phase based on percentage
 const getFundingPhase = (fundItem: FundItem): string => {
@@ -20,22 +21,65 @@ const getFundingPhase = (fundItem: FundItem): string => {
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [contributionAmount, setContributionAmount] = useState<number>(10);
   const [isContributing, setIsContributing] = useState<boolean>(false);
+  const [fundItem, setFundItem] = useState<FundItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
 
-  // Find the fund item with the matching ID
-  const fundItem = fundItems.find(item => item.id === resolvedParams.id);
+  // Fetch fund item data
+  useEffect(() => {
+    const fetchFundItem = async () => {
+      try {
+        setLoading(true);
+        console.log(`Project page: Fetching campaign with id ${resolvedParams.id}`);
 
-  // If the fund item doesn't exist, show a message
-  if (!fundItem) {
+        const item = await getCampaignById(resolvedParams.id);
+        console.log(`Project page: Successfully fetched campaign:`, item?.name);
+
+        if (!item) {
+          console.error(`Project page: Campaign not found for id ${resolvedParams.id}`);
+          setError('Project not found. It may have been removed or is no longer available.');
+          setFundItem(null);
+        } else {
+          setFundItem(item);
+          setError(null);
+        }
+      } catch (err: any) {
+        console.error('Project page: Error fetching fund item:', err);
+        setError(err?.message || 'Failed to load project details. Please try again later.');
+        setFundItem(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFundItem();
+  }, [resolvedParams.id]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Loading Project...</h1>
+          <p className="text-muted-foreground mb-6">Please wait while we fetch the project details.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error || !fundItem) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Project Not Found</h1>
-          <p className="text-muted-foreground mb-6">The project you're looking for doesn't exist or has been removed.</p>
+          <p className="text-muted-foreground mb-6">{error || "The project you're looking for doesn't exist or has been removed."}</p>
           <Link
             href="/foundfund/funders"
             className="bg-white text-black py-2.5 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
@@ -52,21 +96,27 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     100
   );
 
-  const handleContribute = () => {
+  const handleContribute = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      router.push(`/foundfund/login?callbackUrl=/foundfund/projects/${resolvedParams.id}`);
+      return;
+    }
+
     // In a real app, this would make an API call to process the contribution
     alert(`Contributing $${contributionAmount} to project ${fundItem.id}`);
 
-    // For demo purposes, we could update the mock data here
-    const itemIndex = fundItems.findIndex(item => item.id === fundItem.id);
-    if (itemIndex !== -1) {
-      fundItems[itemIndex].currentAmount += contributionAmount;
-    }
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Update the UI
+    setFundItem({
+      ...fundItem,
+      currentAmount: fundItem.currentAmount + contributionAmount
+    });
 
     setIsContributing(false);
     setContributionAmount(10);
-
-    // Refresh the page to show the updated data
-    router.refresh();
   };
 
   return (
@@ -222,10 +272,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
           ) : (
             <div className="border-t border-white/10 pt-8 mt-8">
               <button
-                onClick={() => setIsContributing(true)}
+                onClick={() => isAuthenticated ? setIsContributing(true) : router.push(`/foundfund/login?callbackUrl=/foundfund/projects/${resolvedParams.id}`)}
                 className="w-full bg-white text-black py-3 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] font-medium"
               >
-                Contribute to this Project
+                {isAuthenticated ? 'Contribute to this Project' : 'Sign In to Contribute'}
               </button>
             </div>
           )}

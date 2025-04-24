@@ -16,6 +16,7 @@ const UserSchema = new Schema({
   id: { type: String }, // Include the id field from our seed data
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
   name: { type: String, required: true },
   bio: String,
   avatarUrl: String,

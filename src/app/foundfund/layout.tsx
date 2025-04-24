@@ -1,5 +1,5 @@
 import React from 'react';
-import Link from 'next/link';
+import Header from '@/components/Header';
 
 export default function FoundFundLayout({
   children,
@@ -8,27 +8,7 @@ export default function FoundFundLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-background border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold tracking-tight">
-            FoundFund
-          </Link>
-          <nav className="space-x-8">
-            <Link
-              href="/foundfund/funders"
-              className="text-foreground hover:text-foreground/80 transition-colors"
-            >
-              Discover
-            </Link>
-            <Link
-              href="/foundfund/creators"
-              className="text-foreground hover:text-foreground/80 transition-colors"
-            >
-              Create
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-grow">
         {children}
