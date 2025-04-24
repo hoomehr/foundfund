@@ -29,9 +29,13 @@ export default function CreatorsPage() {
       </div>
 
       {userCampaigns.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {userCampaigns.map(campaign => (
-            <CampaignCard key={campaign.id} campaign={campaign} />
+            <div key={campaign.id} className="flex justify-center">
+              <div className="w-full max-w-md">
+                <CampaignCard campaign={campaign} />
+              </div>
+            </div>
           ))}
         </div>
       ) : (

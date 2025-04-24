@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FundItem } from '@/types';
 import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
-import CampaignDetailsModal from '@/components/CampaignDetailsModal';
 
 interface CampaignCardProps {
   campaign: FundItem;
 }
 
 export default function CampaignCard({ campaign }: CampaignCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const progressPercentage = Math.min(
     Math.round((campaign.currentAmount / campaign.fundingGoal) * 100),
     100
@@ -19,13 +17,13 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-secondary text-secondary-foreground';
+        return 'bg-black/30 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.3)]';
       case 'funded':
-        return 'bg-primary/10 text-primary';
+        return 'bg-black/30 text-green-500 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.5)]';
       case 'expired':
-        return 'bg-muted text-muted-foreground';
+        return 'bg-black/30 text-gray-400 border border-gray-500/30 shadow-[0_0_10px_rgba(255,255,255,0.2)]';
       default:
-        return 'bg-secondary text-secondary-foreground';
+        return 'bg-black/30 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.3)]';
     }
   };
 
@@ -102,19 +100,13 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
           >
             Edit
           </Link>
-          <button
-            onClick={() => setIsModalOpen(true)}
+          <Link
+            href={`/foundfund/creators/campaigns/${campaign.id}`}
             className="flex-1 bg-white text-black text-center py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] whitespace-nowrap"
           >
             Details
-          </button>
+          </Link>
         </CardItem>
-
-        <CampaignDetailsModal
-          campaign={campaign}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-        />
       </CardBody>
     </CardContainer>
   );

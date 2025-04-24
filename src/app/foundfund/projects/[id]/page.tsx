@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, use } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { fundItems } from '@/data/mockData'
 import { FundItem } from '@/types'
-import Modal from '@/components/ui/modal'
-import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card'
 
 // Helper function to determine funding phase based on percentage
 const getFundingPhase = (fundItem: FundItem): string => {
@@ -17,58 +18,108 @@ const getFundingPhase = (fundItem: FundItem): string => {
   return "Starting";
 };
 
-interface FundItemDetailsModalProps {
-  fundItem: FundItem
-  isOpen: boolean
-  onClose: () => void
-}
-
-export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: FundItemDetailsModalProps) {
+export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
   const [contributionAmount, setContributionAmount] = useState<number>(10);
   const [isContributing, setIsContributing] = useState<boolean>(false);
+
+  // Unwrap params using React.use()
+  const resolvedParams = use(params);
+
+  // Find the fund item with the matching ID
+  const fundItem = fundItems.find(item => item.id === resolvedParams.id);
+
+  // If the fund item doesn't exist, show a message
+  if (!fundItem) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Project Not Found</h1>
+          <p className="text-muted-foreground mb-6">The project you're looking for doesn't exist or has been removed.</p>
+          <Link
+            href="/foundfund/funders"
+            className="bg-white text-black py-2.5 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
+          >
+            Browse Projects
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const progressPercentage = Math.min(
     Math.round((fundItem.currentAmount / fundItem.fundingGoal) * 100),
     100
-  )
+  );
+
+  const handleContribute = () => {
+    // In a real app, this would make an API call to process the contribution
+    alert(`Contributing $${contributionAmount} to project ${fundItem.id}`);
+
+    // For demo purposes, we could update the mock data here
+    const itemIndex = fundItems.findIndex(item => item.id === fundItem.id);
+    if (itemIndex !== -1) {
+      fundItems[itemIndex].currentAmount += contributionAmount;
+    }
+
+    setIsContributing(false);
+    setContributionAmount(10);
+
+    // Refresh the page to show the updated data
+    router.refresh();
+  };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={fundItem.name}>
-      <div className="space-y-8">
-        {fundItem.imageUrl && (
-          <div className="relative h-64 w-full rounded-lg overflow-hidden">
-            <Image
-              src={fundItem.imageUrl || "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop"}
-              fill
-              className="object-cover"
-              alt={fundItem.name}
-            />
-          </div>
-        )}
+    <div className="container mx-auto px-4 py-12">
+      <button
+        onClick={() => router.push('/foundfund/funders')}
+        className="bg-white text-black mb-6 flex items-center py-2 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
+      >
+        ← Back to Projects
+      </button>
 
-        <div className="flex flex-wrap gap-2 mb-6">
-          <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-            {fundItem.category}
-          </span>
-          <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-            trending
-          </span>
-          {fundItem.currentAmount > 1000 && (
+      <div className="max-w-4xl mx-auto">
+        {/* Project Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4">{fundItem.name}</h1>
+
+          <div className="flex flex-wrap gap-2 mb-6">
             <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-              popular
+              {fundItem.category}
             </span>
+            <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+              trending
+            </span>
+            {fundItem.currentAmount > 1000 && (
+              <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
+                popular
+              </span>
+            )}
+          </div>
+
+          {fundItem.imageUrl && (
+            <div className="relative h-80 w-full rounded-xl overflow-hidden mb-8">
+              <Image
+                src={fundItem.imageUrl}
+                alt={fundItem.name}
+                fill
+                className="object-cover"
+              />
+            </div>
           )}
         </div>
 
-        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+        {/* Project Content */}
+        <div className="bg-card border rounded-xl p-8 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           {/* Project Details */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-3">Project Details</h3>
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-4">Project Details</h2>
             <p className="text-muted-foreground leading-relaxed">{fundItem.description}</p>
           </div>
 
           {/* Funding Progress */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-4">Funding Progress</h3>
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-4">Funding Progress</h2>
             <div className="mb-6">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-card-foreground font-medium">${fundItem.currentAmount.toLocaleString()} raised</span>
@@ -95,8 +146,8 @@ export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: Fund
           </div>
 
           {/* Project Timeline */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-4">Project Timeline</h3>
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-4">Project Timeline</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-black/20 rounded-xl p-4 border border-white/10">
                 <div className="text-muted-foreground text-sm mb-1">Created</div>
@@ -114,8 +165,8 @@ export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: Fund
           </div>
 
           {/* Creator Info */}
-          <div className="mb-8">
-            <h3 className="text-xl font-bold mb-4">Creator Info</h3>
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-4">Creator Info</h2>
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-xl mr-4">
                 {fundItem.creatorId.charAt(0).toUpperCase()}
@@ -139,8 +190,8 @@ export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: Fund
 
           {/* Contribute Section */}
           {isContributing ? (
-            <div className="border-t border-white/10 pt-6 mt-6">
-              <h3 className="text-xl font-bold mb-4">Contribute to this Project</h3>
+            <div className="border-t border-white/10 pt-8 mt-8">
+              <h2 className="text-2xl font-bold mb-4">Contribute to this Project</h2>
               <div className="space-y-4">
                 <div className="flex items-center">
                   <span className="mr-2 text-card-foreground font-medium">$</span>
@@ -160,7 +211,7 @@ export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: Fund
                     Cancel
                   </button>
                   <button
-                    onClick={() => setIsContributing(false)}
+                    onClick={handleContribute}
                     className="flex-1 bg-white text-black py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
                   >
                     Confirm Contribution
@@ -169,23 +220,17 @@ export default function FundItemDetailsModal({ fundItem, isOpen, onClose }: Fund
               </div>
             </div>
           ) : (
-            <div className="border-t border-white/10 pt-6 mt-6 flex space-x-3">
+            <div className="border-t border-white/10 pt-8 mt-8">
               <button
                 onClick={() => setIsContributing(true)}
-                className="flex-1 bg-white text-black py-2.5 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
+                className="w-full bg-white text-black py-3 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] font-medium"
               >
                 Contribute to this Project
-              </button>
-              <button
-                onClick={onClose}
-                className="bg-white/10 text-white py-2.5 px-6 rounded-2xl transition-colors border border-white/20"
-              >
-                Close
               </button>
             </div>
           )}
         </div>
       </div>
-    </Modal>
-  )
+    </div>
+  );
 }

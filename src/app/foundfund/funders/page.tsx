@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { fundItems } from '@/data/mockData';
 import { Category, FundingStatus } from '@/types';
-import FundItemCard2 from '@/components/FundItemCard2';
+import FundItemCard from '@/components/FundItemCard';
 import FilterBar from '@/components/FilterBar';
 
 export default function FundersPage() {
@@ -95,7 +95,7 @@ export default function FundersPage() {
       {sortedItems.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {sortedItems.map(item => (
-            <FundItemCard2
+            <FundItemCard
               key={item.id}
               fundItem={item}
               onContribute={handleContribute}
