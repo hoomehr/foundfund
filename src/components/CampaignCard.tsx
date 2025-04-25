@@ -29,20 +29,20 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
 
   return (
     <CardContainer>
-      <CardBody className="bg-card relative border w-full h-auto rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+      <CardBody className="bg-card relative border w-full h-auto rounded-xl p-4 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
         {campaign.imageUrl && (
-          <CardItem translateZ="100" className="w-full mb-6">
+          <CardItem translateZ="100" className="w-full mb-3">
             <Image
               src={campaign.imageUrl || "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop"}
               height="1000"
               width="1000"
-              className="h-60 w-full object-cover rounded-lg"
+              className="h-48 w-full object-cover rounded-lg"
               alt={campaign.name}
             />
           </CardItem>
         )}
 
-        <div className="flex justify-between items-start mb-3">
+        <div className="flex justify-between items-start mb-2">
           <CardItem translateZ="50" className="text-2xl font-bold text-card-foreground">
             {campaign.name}
           </CardItem>
@@ -51,7 +51,7 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
           </CardItem>
         </div>
 
-        <CardItem translateZ="30" className="flex flex-wrap gap-2 mb-3">
+        <CardItem translateZ="30" className="flex flex-wrap gap-2 mb-2">
           <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
             {campaign.category}
           </span>
@@ -65,11 +65,11 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
           )}
         </CardItem>
 
-        <CardItem as="p" translateZ="60" className="text-muted-foreground mt-2 mb-4 line-clamp-2">
+        <CardItem as="p" translateZ="60" className="text-muted-foreground mt-1 mb-2 line-clamp-2">
           {campaign.description}
         </CardItem>
 
-        <CardItem translateZ="40" className="mb-5 w-full">
+        <CardItem translateZ="40" className="mb-3 w-full">
           <div className="flex justify-between text-sm mb-2">
             <span className="text-card-foreground">${campaign.currentAmount.toLocaleString()} raised</span>
             <span className="text-muted-foreground">${campaign.fundingGoal.toLocaleString()} goal</span>
@@ -88,9 +88,12 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
           </div>
         </CardItem>
 
-        <CardItem translateZ="30" className="flex justify-between text-sm text-muted-foreground mb-5">
-          <span>Created: {new Date(campaign.createdAt).toLocaleDateString()}</span>
-          <span>Ends: {new Date(campaign.endDate).toLocaleDateString()}</span>
+        <CardItem translateZ="30" className="flex justify-end text-xs text-muted-foreground mb-3">
+          <div className="text-right">
+            <span className="font-medium text-white">
+              Ends: {new Date(campaign.endDate).toLocaleDateString()}
+            </span>
+          </div>
         </CardItem>
 
         <CardItem translateZ="50" className="flex space-x-3">

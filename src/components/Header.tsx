@@ -27,6 +27,11 @@ export default function Header() {
               Discover
             </Link>
             {isAuthenticated && (
+              <Link href="/foundfund/investments" className={`${isActive('/foundfund/investments')} transition-colors`}>
+                Investments
+              </Link>
+            )}
+            {isAuthenticated && (
               <Link href="/foundfund/creators" className={`${isActive('/foundfund/creators')} transition-colors`}>
                 My Campaigns
               </Link>

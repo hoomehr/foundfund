@@ -87,11 +87,23 @@ export async function getCampaigns(params?: {
     }
   }
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch campaigns');
+  try {
+    console.log(`Fetching campaigns with params:`, params);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error fetching campaigns:`, errorData);
+      throw new Error('Failed to fetch campaigns');
+    }
+
+    const data = await response.json();
+    console.log(`Successfully fetched ${data.length} campaigns`);
+    return data;
+  } catch (error) {
+    console.error(`Error in getCampaigns:`, error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function getCampaignById(id: string): Promise<FundItem> {
@@ -122,6 +134,7 @@ export async function getCampaignsByCreator(creatorId: string): Promise<FundItem
 export async function getContributions(params?: {
   campaignId?: string;
   userId?: string;
+  contributorId?: string;
 }): Promise<Contribution[]> {
   let url = `${API_BASE}/contributions`;
 
@@ -136,16 +149,32 @@ export async function getContributions(params?: {
       queryParams.append('userId', params.userId);
     }
 
+    if (params.contributorId) {
+      queryParams.append('contributorId', params.contributorId);
+    }
+
     if (queryParams.toString()) {
       url += `?${queryParams.toString()}`;
     }
   }
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch contributions');
+  try {
+    console.log(`Fetching contributions with params:`, params);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error fetching contributions:`, errorData);
+      throw new Error('Failed to fetch contributions');
+    }
+
+    const data = await response.json();
+    console.log(`Successfully fetched ${data.length} contributions`);
+    return data;
+  } catch (error) {
+    console.error(`Error in getContributions:`, error);
+    throw error;
   }
-  return response.json();
 }
 
 export async function getContributionsByCampaign(campaignId: string): Promise<Contribution[]> {
@@ -154,6 +183,10 @@ export async function getContributionsByCampaign(campaignId: string): Promise<Co
 
 export async function getContributionsByUser(userId: string): Promise<Contribution[]> {
   return getContributions({ userId });
+}
+
+export async function getContributionsByContributor(contributorId: string): Promise<Contribution[]> {
+  return getContributions({ contributorId });
 }
 
 // Helper functions

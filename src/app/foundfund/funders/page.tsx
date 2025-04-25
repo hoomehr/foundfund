@@ -127,7 +127,7 @@ export default function FundersPage() {
           <p className="text-xl text-muted-foreground">{error}</p>
         </div>
       ) : sortedItems.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0.5">
           {sortedItems.map(item => (
             <FundItemCard
               key={item.id}

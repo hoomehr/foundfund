@@ -38,22 +38,23 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
   return (
     <>
       <CardContainer>
-        <CardBody className="bg-card border rounded-xl overflow-hidden w-full shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+        <CardBody className="bg-card border rounded-xl overflow-hidden w-full h-full shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)', minHeight: '500px' }}>
           {fundItem.imageUrl && (
             <CardItem translateZ="60" className="w-full">
               <div className="relative h-48 w-full">
                 <Image
-                  src={fundItem.imageUrl}
+                  src={fundItem.imageUrl.startsWith('/uploads') ? fundItem.imageUrl : fundItem.imageUrl}
                   alt={fundItem.name}
                   fill
                   style={{ objectFit: 'cover' }}
+                  priority
                 />
               </div>
             </CardItem>
           )}
 
           <div className="p-5">
-            <div className="flex justify-between items-start mb-3">
+            <div className="flex justify-between items-start mb-2">
               <CardItem translateZ="40" className="text-xl font-semibold text-card-foreground">
                 {fundItem.name}
               </CardItem>
@@ -62,7 +63,7 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
               </CardItem>
             </div>
 
-            <CardItem translateZ="30" className="flex flex-wrap gap-2 mb-3">
+            <CardItem translateZ="30" className="flex flex-wrap gap-2 mb-2">
               <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md border border-white/20 shadow-[0_0_10px_rgba(255,255,255,0.3)]">
                 {fundItem.category}
               </span>
@@ -78,11 +79,11 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
               )}
             </CardItem>
 
-            <CardItem translateZ="30" as="p" className="text-muted-foreground mb-4 line-clamp-3">
+            <CardItem translateZ="30" as="p" className="text-muted-foreground mb-2 line-clamp-3">
               {fundItem.description}
             </CardItem>
 
-            <CardItem translateZ="40" className="mb-5 w-full">
+            <CardItem translateZ="40" className="mb-3 w-full">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-card-foreground">${fundItem.currentAmount.toLocaleString()} raised</span>
                 <span className="text-muted-foreground">${fundItem.fundingGoal.toLocaleString()} goal</span>
@@ -98,52 +99,25 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
               <div className="text-right text-xs text-muted-foreground mt-1">
                 {progressPercentage}% funded
               </div>
+
+              <div className="flex justify-start text-xs text-muted-foreground mt-3">
+                <div className="text-left">
+                  <span className="font-medium text-white">
+                    Ends: {new Date(fundItem.endDate).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
             </CardItem>
 
             <CardItem translateZ="50" className="w-full">
-              {isContributing ? (
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <span className="mr-2 text-card-foreground">$</span>
-                    <input
-                      type="number"
-                      min="1"
-                      value={contributionAmount}
-                      onChange={(e) => setContributionAmount(Number(e.target.value))}
-                      className="border border-input bg-background rounded-md px-3 py-1.5 w-full focus:outline-none focus:ring-1 focus:ring-ring"
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={handleContribute}
-                      className="bg-white text-black px-4 py-2 rounded-2xl text-sm flex-1 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={() => setIsContributing(false)}
-                      className="bg-white text-black px-4 py-2 rounded-2xl text-sm transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setIsContributing(true)}
-                    className="flex-1 bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
-                  >
-                    Contribute
-                  </button>
-                  <Link
-                    href={`/foundfund/projects/${fundItem.id}`}
-                    className="flex-1 bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] text-center"
-                  >
-                    Details
-                  </Link>
-                </div>
-              )}
+              <div className="flex justify-center">
+                <Link
+                  href={`/foundfund/projects/${fundItem.id}`}
+                  className="w-full bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] text-center"
+                >
+                  View Details
+                </Link>
+              </div>
             </CardItem>
           </div>
         </CardBody>

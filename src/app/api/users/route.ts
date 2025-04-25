@@ -20,6 +20,12 @@ export async function GET(request: Request) {
       query.email = email;
     }
 
+    // Check for username filter
+    const username = searchParams.get('username');
+    if (username) {
+      query.username = username;
+    }
+
     console.log('GET /api/users - Executing query:', JSON.stringify(query));
     const users = await User.find(query).lean();
     console.log('GET /api/users - Found users:', users ? users.length : 0);
@@ -30,13 +36,14 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    // Convert _id to id for frontend compatibility
+    // Convert _id to id for frontend compatibility and remove passwords
     const formattedUsers = users.map(user => {
       // If the user already has an id field, use it
       const id = user.id || user._id.toString();
+      const { password, ...userWithoutPassword } = user;
       return {
         id,
-        ...user,
+        ...userWithoutPassword,
         _id: undefined
       };
     });

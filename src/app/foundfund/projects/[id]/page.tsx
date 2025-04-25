@@ -103,20 +103,61 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       return;
     }
 
-    // In a real app, this would make an API call to process the contribution
-    alert(`Contributing $${contributionAmount} to project ${fundItem.id}`);
+    try {
+      setIsContributing(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create the contribution object
+      const contribution = {
+        fundItemId: fundItem.id,
+        campaignId: fundItem.id,
+        contributorId: user?.id,
+        userId: user?.id,
+        amount: contributionAmount,
+        status: 'completed',
+        message: '',
+        anonymous: false,
+        createdAt: new Date().toISOString()
+      };
 
-    // Update the UI
-    setFundItem({
-      ...fundItem,
-      currentAmount: fundItem.currentAmount + contributionAmount
-    });
+      console.log('Submitting contribution:', contribution);
 
-    setIsContributing(false);
-    setContributionAmount(10);
+      // Make API call to save the contribution
+      const response = await fetch('/api/contributions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contribution),
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        console.error('Error response from server:', responseData);
+        throw new Error(responseData.error || 'Failed to save contribution');
+      }
+
+      console.log('Contribution saved:', responseData);
+
+      // The API now handles updating the campaign amount, but we'll update the UI
+      // to reflect the change immediately
+
+      // Update the UI
+      setFundItem({
+        ...fundItem,
+        currentAmount: fundItem.currentAmount + contributionAmount
+      });
+
+      // Show success message
+      alert(`Thank you for contributing $${contributionAmount} to ${fundItem.name}!`);
+
+      setIsContributing(false);
+      setContributionAmount(10);
+    } catch (error) {
+      console.error('Error processing contribution:', error);
+      alert('There was an error processing your contribution. Please try again.');
+      setIsContributing(false);
+    }
   };
 
   return (
@@ -150,10 +191,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
           {fundItem.imageUrl && (
             <div className="relative h-80 w-full rounded-xl overflow-hidden mb-8">
               <Image
-                src={fundItem.imageUrl}
+                src={fundItem.imageUrl.startsWith('/uploads') ? fundItem.imageUrl : fundItem.imageUrl}
                 alt={fundItem.name}
                 fill
                 className="object-cover"
+                priority
               />
             </div>
           )}

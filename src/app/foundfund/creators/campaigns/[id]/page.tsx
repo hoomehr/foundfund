@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useState, use } from 'react'
+import React, { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { fundItems } from '@/data/mockData'
+import { getCampaignById } from '@/lib/api'
 import { FundItem } from '@/types'
 
 // Helper function to determine funding phase based on percentage
@@ -20,20 +20,62 @@ const getFundingPhase = (fundItem: FundItem): string => {
 
 export default function CampaignDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const [campaign, setCampaign] = useState<FundItem | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
 
-  // Find the campaign with the matching ID
-  const campaign = fundItems.find(item => item.id === resolvedParams.id);
+  // Fetch campaign data
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      try {
+        setLoading(true);
+        console.log(`Creator campaign page: Fetching campaign with id ${resolvedParams.id}`);
+
+        const item = await getCampaignById(resolvedParams.id);
+        console.log(`Creator campaign page: Successfully fetched campaign:`, item?.name);
+
+        if (!item) {
+          console.error(`Creator campaign page: Campaign not found for id ${resolvedParams.id}`);
+          setError('Campaign not found. It may have been removed or is no longer available.');
+          setCampaign(null);
+        } else {
+          setCampaign(item);
+          setError(null);
+        }
+      } catch (err: any) {
+        console.error('Creator campaign page: Error fetching campaign:', err);
+        setError(err?.message || 'Failed to load campaign details. Please try again later.');
+        setCampaign(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaign();
+  }, [resolvedParams.id]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Loading Campaign...</h1>
+          <p className="text-muted-foreground mb-6">Please wait while we fetch the campaign details.</p>
+        </div>
+      </div>
+    );
+  }
 
   // If the campaign doesn't exist, show a message
-  if (!campaign) {
+  if (error || !campaign) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Campaign Not Found</h1>
-          <p className="text-muted-foreground mb-6">The campaign you're looking for doesn't exist or has been removed.</p>
+          <p className="text-muted-foreground mb-6">{error || "The campaign you're looking for doesn't exist or has been removed."}</p>
           <Link
             href="/foundfund/creators"
             className="bg-white text-black py-2.5 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
@@ -97,10 +139,11 @@ export default function CampaignDetailsPage({ params }: { params: Promise<{ id: 
           {campaign.imageUrl && (
             <div className="relative h-80 w-full rounded-xl overflow-hidden mb-8">
               <Image
-                src={campaign.imageUrl}
+                src={campaign.imageUrl.startsWith('/uploads') ? campaign.imageUrl : campaign.imageUrl}
                 alt={campaign.name}
                 fill
                 className="object-cover"
+                priority
               />
             </div>
           )}

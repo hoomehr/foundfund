@@ -69,7 +69,7 @@ export default function CreatorsPage() {
           <p className="text-xl text-muted-foreground">{error}</p>
         </div>
       ) : userCampaigns.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-0.5 max-w-7xl mx-auto">
           {userCampaigns.map(campaign => (
             <div key={campaign.id} className="flex justify-center">
               <div className="w-full max-w-md">
