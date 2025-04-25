@@ -4,6 +4,7 @@ import React, { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCampaignById } from '@/lib/api';
 import ListingForm from '@/components/ListingForm';
+import EditSuccessModal from '@/components/EditSuccessModal';
 import { FundItem } from '@/types';
 
 interface EditCampaignPageProps {
@@ -17,6 +18,8 @@ export default function EditCampaignPage({ params }: EditCampaignPageProps) {
   const [campaign, setCampaign] = useState<FundItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [updatedCampaign, setUpdatedCampaign] = useState<Partial<FundItem>>({});
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
@@ -104,11 +107,13 @@ export default function EditCampaignPage({ params }: EditCampaignPageProps) {
 
       console.log('Campaign updated successfully:', responseData);
 
-      // Show success message
-      alert(`Campaign "${formData.name}" updated successfully!`);
-
-      // Navigate back to the campaign details page
-      router.push(`/foundfund/creators/campaigns/${id}`);
+      // Set the updated campaign data and show success modal
+      setUpdatedCampaign({
+        ...formData,
+        id,
+        ...responseData
+      });
+      setShowSuccessModal(true);
     } catch (error: any) {
       console.error('Error updating campaign:', error);
       alert(`There was an error updating your campaign: ${error.message || 'Please try again.'}`);
@@ -140,6 +145,16 @@ export default function EditCampaignPage({ params }: EditCampaignPageProps) {
           onCancel={handleCancel}
         />
       </div>
+
+      {/* Success Modal */}
+      <EditSuccessModal
+        campaign={updatedCampaign}
+        isOpen={showSuccessModal}
+        onClose={() => {
+          setShowSuccessModal(false);
+          router.push(`/foundfund/creators/campaigns/${id}`);
+        }}
+      />
     </div>
   );
 }

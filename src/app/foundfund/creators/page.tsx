@@ -30,7 +30,12 @@ export default function CreatorsPage() {
       try {
         setLoading(true);
         console.log('Fetching campaigns for user:', user.id);
-        const campaigns = await getCampaignsByCreator(user.id);
+
+        // Use 'user1' for demo purposes to match mock data
+        const userId = user.id === '68007dd6b8d75134f41c88a8' ? 'user1' : user.id;
+        console.log('Using userId for API call:', userId);
+
+        const campaigns = await getCampaignsByCreator(userId);
         setUserCampaigns(campaigns || []);
         setError(null);
       } catch (err) {
@@ -44,14 +49,16 @@ export default function CreatorsPage() {
     fetchData();
   }, [user, isAuthenticated]);
 
+  // Analytics data
+  const totalCampaigns = userCampaigns.length;
+  const totalRaised = userCampaigns.reduce((sum, campaign) => sum + campaign.currentAmount, 0);
+  const avgFunding = totalCampaigns > 0 ? totalRaised / totalCampaigns : 0;
+  const successfulCampaigns = userCampaigns.filter(campaign => campaign.status === 'funded').length;
+
   return (
     <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-4 tracking-tight">Creator Dashboard</h1>
-      <p className="text-lg text-muted-foreground mb-10 max-w-2xl">
-        Manage your campaigns and track your funding progress.
-      </p>
-
-      <div className="mb-10">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-bold tracking-tight">My Fund Raisings</h1>
         <Link
           href="/foundfund/creators/new"
           className="bg-white text-black font-medium py-2.5 px-6 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
@@ -59,6 +66,28 @@ export default function CreatorsPage() {
           Create New Campaign
         </Link>
       </div>
+
+      {/* Analytics Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg text-muted-foreground mb-2">Total Campaigns</h3>
+          <p className="text-3xl font-bold text-shadow-green">{totalCampaigns}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg text-muted-foreground mb-2">Total Raised</h3>
+          <p className="text-3xl font-bold text-shadow-green">${totalRaised}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg text-muted-foreground mb-2">Avg. Funding</h3>
+          <p className="text-3xl font-bold text-shadow-green">${avgFunding.toFixed(2)}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg text-muted-foreground mb-2">Successful Campaigns</h3>
+          <p className="text-3xl font-bold text-shadow-green">{successfulCampaigns}</p>
+        </div>
+      </div>
+
+      <h2 className="text-2xl font-bold mb-4">Your Campaigns</h2>
 
       {loading ? (
         <div className="text-center py-16 border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>

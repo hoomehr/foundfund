@@ -3,10 +3,11 @@ import { connectToDatabase, User } from '@/models';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Use React.use() to properly handle dynamic params
+    const { id } = context.params;
     await connectToDatabase();
 
     // Try to find by MongoDB _id first, then by our custom id field
@@ -30,7 +31,7 @@ export async function GET(
 
     return NextResponse.json(formattedUser);
   } catch (error) {
-    console.error(`Error fetching user ${params.id}:`, error);
+    console.error(`Error fetching user ${id}:`, error);
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
   }
 }

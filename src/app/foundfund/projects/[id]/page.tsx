@@ -5,8 +5,9 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getCampaignById } from '@/lib/api'
-import { FundItem } from '@/types'
+import { FundItem, Contribution } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
+import BackersModal from '@/components/BackersModal'
 
 // Helper function to determine funding phase based on percentage
 const getFundingPhase = (fundItem: FundItem): string => {
@@ -27,6 +28,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const [fundItem, setFundItem] = useState<FundItem | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBackersModalOpen, setIsBackersModalOpen] = useState<boolean>(false);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
@@ -48,6 +51,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         } else {
           setFundItem(item);
           setError(null);
+
+          // Fetch contributions for this campaign
+          fetchContributions(item.id);
         }
       } catch (err: any) {
         console.error('Project page: Error fetching fund item:', err);
@@ -60,6 +66,22 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
     fetchFundItem();
   }, [resolvedParams.id]);
+
+  // Fetch contributions for the campaign
+  const fetchContributions = async (campaignId: string) => {
+    try {
+      const response = await fetch(`/api/contributions?campaignId=${campaignId}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch contributions');
+      }
+
+      const data = await response.json();
+      setContributions(data);
+    } catch (error) {
+      console.error('Error fetching contributions:', error);
+    }
+  };
 
   // Show loading state
   if (loading) {
@@ -130,11 +152,17 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         body: JSON.stringify(contribution),
       });
 
-      const responseData = await response.json();
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (error) {
+        console.error('Error parsing response:', error);
+        throw new Error('Failed to parse server response');
+      }
 
       if (!response.ok) {
         console.error('Error response from server:', responseData);
-        throw new Error(responseData.error || 'Failed to save contribution');
+        throw new Error(responseData?.error || 'Failed to save contribution');
       }
 
       console.log('Contribution saved:', responseData);
@@ -153,9 +181,21 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
       setIsContributing(false);
       setContributionAmount(10);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing contribution:', error);
-      alert('There was an error processing your contribution. Please try again.');
+
+      // Provide a more specific error message if available
+      let errorMessage = 'There was an error processing your contribution. Please try again.';
+
+      if (error?.message) {
+        if (error.message.includes('Campaign not found')) {
+          errorMessage = 'The campaign could not be found. It may have been removed or is no longer available.';
+        } else {
+          errorMessage = `Error: ${error.message}`;
+        }
+      }
+
+      alert(errorMessage);
       setIsContributing(false);
     }
   };
@@ -211,7 +251,21 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
           {/* Funding Progress */}
           <div className="mb-10">
-            <h2 className="text-2xl font-bold mb-4">Funding Progress</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Funding Progress</h2>
+              <button
+                onClick={() => setIsBackersModalOpen(true)}
+                className="bg-white text-black text-sm px-3 py-1.5 rounded-md border border-white/30 hover:bg-white/90 transition-colors flex items-center gap-1 shadow-[0_0_15px_rgba(255,255,255,0.5),_0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7),_0_0_40px_rgba(255,255,255,0.4)]"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                View All Backers ({contributions.length})
+              </button>
+            </div>
             <div className="mb-6">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-card-foreground font-medium">${fundItem.currentAmount.toLocaleString()} raised</span>
@@ -323,6 +377,16 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
           )}
         </div>
       </div>
+
+      {/* Backers Modal */}
+      {fundItem && (
+        <BackersModal
+          campaign={fundItem}
+          contributions={contributions}
+          isOpen={isBackersModalOpen}
+          onClose={() => setIsBackersModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

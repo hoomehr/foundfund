@@ -7,6 +7,7 @@ import { CardBody, CardContainer, CardItem } from '@/components/ui/3d-card';
 interface FundItemCardProps {
   fundItem: FundItem;
   onContribute: (fundItemId: string, amount: number) => void;
+  isDiscoverPage?: boolean;
 }
 
 // Helper function to determine funding phase based on percentage
@@ -20,7 +21,7 @@ const getFundingPhase = (fundItem: FundItem): string => {
   return "Starting";
 };
 
-export default function FundItemCard({ fundItem, onContribute }: FundItemCardProps) {
+export default function FundItemCard({ fundItem, onContribute, isDiscoverPage = false }: FundItemCardProps) {
   const [contributionAmount, setContributionAmount] = useState<number>(10);
   const [isContributing, setIsContributing] = useState<boolean>(false);
 
@@ -38,10 +39,10 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
   return (
     <>
       <CardContainer>
-        <CardBody className="bg-card border rounded-xl overflow-hidden w-full h-full shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)', minHeight: '500px' }}>
+        <CardBody className="bg-card border rounded-xl overflow-hidden w-full h-full shadow-[0_0_30px_rgba(255,255,255,0.2),_0_0_50px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3),_0_0_70px_rgba(255,255,255,0.2)] transition-shadow duration-300 group" style={{ borderColor: 'var(--border)', minHeight: '500px' }}>
           {fundItem.imageUrl && (
             <CardItem translateZ="60" className="w-full">
-              <div className="relative h-48 w-full">
+              <div className="relative w-full" style={{ paddingBottom: '66.67%' }}>
                 <Image
                   src={fundItem.imageUrl.startsWith('/uploads') ? fundItem.imageUrl : fundItem.imageUrl}
                   alt={fundItem.name}
@@ -53,7 +54,7 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
             </CardItem>
           )}
 
-          <div className="p-5">
+          <div className="px-5 pt-5 pb-3">
             <div className="flex justify-between items-start mb-2">
               <CardItem translateZ="40" className="text-xl font-semibold text-card-foreground">
                 {fundItem.name}
@@ -96,29 +97,28 @@ export default function FundItemCard({ fundItem, onContribute }: FundItemCardPro
                   }}
                 ></div>
               </div>
-              <div className="text-right text-xs text-muted-foreground mt-1">
-                {progressPercentage}% funded
+              <div className="flex justify-between text-xs mt-1">
+                <span className="text-muted-foreground">
+                  {progressPercentage}% funded
+                </span>
+                <span className="text-white">
+                  Ends: {new Date(fundItem.endDate).toLocaleDateString()}
+                </span>
               </div>
 
-              <div className="flex justify-start text-xs text-muted-foreground mt-3">
-                <div className="text-left">
-                  <span className="font-medium text-white">
-                    Ends: {new Date(fundItem.endDate).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </CardItem>
-
-            <CardItem translateZ="50" className="w-full">
-              <div className="flex justify-center">
+              <div className="relative mt-4 mb-2">
                 <Link
                   href={`/foundfund/projects/${fundItem.id}`}
-                  className="w-full bg-white text-black font-medium py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] text-center"
+                  className={`absolute left-0 right-0 -bottom-1 text-sm text-black bg-white px-3 py-1.5 rounded-md border border-white/30 hover:bg-white/90 transition-all transform hover:translate-y-1 hover:scale-105 font-medium shadow-[0_0_15px_rgba(255,255,255,0.5),_0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7),_0_0_40px_rgba(255,255,255,0.4)] ${
+                    isDiscoverPage ? 'opacity-0 group-hover:opacity-100' : ''
+                  }`}
                 >
                   View Details
                 </Link>
               </div>
             </CardItem>
+
+
           </div>
         </CardBody>
       </CardContainer>

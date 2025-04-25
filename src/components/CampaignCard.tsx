@@ -29,16 +29,17 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
 
   return (
     <CardContainer>
-      <CardBody className="bg-card relative border w-full h-auto rounded-xl p-4 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
+      <CardBody className="bg-card relative border w-full h-auto rounded-xl px-4 pt-4 pb-4 shadow-[0_0_30px_rgba(255,255,255,0.2),_0_0_50px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3),_0_0_70px_rgba(255,255,255,0.2)] transition-shadow duration-300" style={{ borderColor: 'var(--border)' }}>
         {campaign.imageUrl && (
           <CardItem translateZ="100" className="w-full mb-3">
-            <Image
-              src={campaign.imageUrl || "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop"}
-              height="1000"
-              width="1000"
-              className="h-48 w-full object-cover rounded-lg"
-              alt={campaign.name}
-            />
+            <div className="relative w-full rounded-lg overflow-hidden" style={{ paddingBottom: '66.67%' }}>
+              <Image
+                src={campaign.imageUrl || "https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop"}
+                fill
+                className="object-cover"
+                alt={campaign.name}
+              />
+            </div>
           </CardItem>
         )}
 
@@ -83,29 +84,28 @@ export default function CampaignCard({ campaign }: CampaignCardProps) {
               }}
             ></div>
           </div>
-          <div className="text-right text-xs text-muted-foreground mt-1">
-            {progressPercentage}% funded
-          </div>
-        </CardItem>
-
-        <CardItem translateZ="30" className="flex justify-end text-xs text-muted-foreground mb-3">
-          <div className="text-right">
-            <span className="font-medium text-white">
+          <div className="flex justify-between text-xs mt-1">
+            <span className="text-muted-foreground">
+              {progressPercentage}% funded
+            </span>
+            <span className="text-white">
               Ends: {new Date(campaign.endDate).toLocaleDateString()}
             </span>
           </div>
         </CardItem>
 
+
+
         <CardItem translateZ="50" className="flex space-x-3">
           <Link
             href={`/foundfund/creators/edit/${campaign.id}`}
-            className="flex-1 bg-white text-black text-center py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] whitespace-nowrap"
+            className="flex-1 bg-white text-black text-center py-1.5 px-4 rounded-xl text-sm transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] whitespace-nowrap"
           >
             Edit
           </Link>
           <Link
             href={`/foundfund/creators/campaigns/${campaign.id}`}
-            className="flex-1 bg-white text-black text-center py-2.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] whitespace-nowrap"
+            className="flex-1 bg-white text-black text-center py-1.5 px-4 rounded-xl text-sm transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] whitespace-nowrap"
           >
             Details
           </Link>

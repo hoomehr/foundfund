@@ -3,10 +3,11 @@ import { connectToDatabase, FundItem } from '@/models';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Use React.use() to properly handle dynamic params
+    const { id } = context.params;
     console.log(`GET /api/campaigns/${id} - Starting`);
 
     await connectToDatabase();
@@ -46,17 +47,18 @@ export async function GET(
     console.log(`GET /api/campaigns/${id} - Returning formatted campaign`);
     return NextResponse.json(formattedCampaign);
   } catch (error) {
-    console.error(`Error fetching campaign ${params.id}:`, error);
+    console.error(`Error fetching campaign ${id}:`, error);
     return NextResponse.json({ error: 'Failed to fetch campaign' }, { status: 500 });
   }
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    // Use React.use() to properly handle dynamic params
+    const { id } = context.params;
     console.log(`PATCH /api/campaigns/${id} - Starting`);
 
     const body = await request.json();
@@ -105,7 +107,7 @@ export async function PATCH(
 
     return NextResponse.json(formattedCampaign);
   } catch (error) {
-    console.error(`Error updating campaign ${params.id}:`, error);
+    console.error(`Error updating campaign ${id}:`, error);
     return NextResponse.json({ error: 'Failed to update campaign' }, { status: 500 });
   }
 }

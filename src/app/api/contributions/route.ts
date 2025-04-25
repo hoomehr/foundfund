@@ -72,7 +72,43 @@ export async function POST(request: Request) {
 
     // Check if campaign exists
     const campaignId = body.campaignId;
-    const campaign = await FundItem.findOne({ id: campaignId });
+
+    // Try to find the campaign in the database by id field
+    let campaign = await FundItem.findOne({ id: campaignId });
+
+    // If not found by id field, try to find by MongoDB _id
+    if (!campaign && /^[0-9a-fA-F]{24}$/.test(campaignId)) {
+      try {
+        console.log(`POST /api/contributions - Not found by id field, trying MongoDB _id`);
+        campaign = await FundItem.findById(campaignId);
+      } catch (error) {
+        console.error(`POST /api/contributions - Error finding by _id:`, error);
+      }
+    }
+
+    // If still not found, check if it's a mock data ID (like 'fund1', 'fund2', etc.)
+    if (!campaign && campaignId && (campaignId.startsWith('fund') || campaignId.startsWith('campaign-'))) {
+      console.log(`POST /api/contributions - Campaign ${campaignId} not found in database, but appears to be a mock ID`);
+
+      try {
+        // Import mock data
+        const { fundItems } = await import('@/data/mockData');
+
+        // Find the campaign in mock data
+        const mockCampaign = fundItems.find(item => item.id === campaignId);
+
+        if (mockCampaign) {
+          console.log(`POST /api/contributions - Found campaign ${campaignId} in mock data`);
+
+          // Create the campaign in the database from mock data
+          campaign = new FundItem(mockCampaign);
+          await campaign.save();
+          console.log(`POST /api/contributions - Saved mock campaign ${campaignId} to database`);
+        }
+      } catch (error) {
+        console.error(`POST /api/contributions - Error handling mock data:`, error);
+      }
+    }
 
     if (!campaign) {
       console.log(`POST /api/contributions - Campaign ${campaignId} not found`);
@@ -94,12 +130,36 @@ export async function POST(request: Request) {
         let campaign = await FundItem.findOne({ id: campaignId });
 
         if (!campaign) {
-          // Only try ObjectId if it looks like a valid MongoDB ObjectId
+          // Try to find by MongoDB _id if it looks like a valid ObjectId
           if (/^[0-9a-fA-F]{24}$/.test(campaignId)) {
-            console.log(`POST /api/contributions - Not found by id field, trying MongoDB _id`);
-            campaign = await FundItem.findById(campaignId);
-          } else {
-            console.log(`POST /api/contributions - Not a valid ObjectId, skipping _id search`);
+            try {
+              console.log(`POST /api/contributions - Not found by id field, trying MongoDB _id`);
+              campaign = await FundItem.findById(campaignId);
+            } catch (error) {
+              console.error(`POST /api/contributions - Error finding by _id:`, error);
+            }
+          }
+
+          // If still not found, check if it's a mock data ID
+          if (!campaign && campaignId && (campaignId.startsWith('fund') || campaignId.startsWith('campaign-'))) {
+            console.log(`POST /api/contributions - Campaign ${campaignId} not found in database, but appears to be a mock ID`);
+
+            // Import mock data
+            const { fundItems } = await import('@/data/mockData');
+
+            // Find the campaign in mock data
+            const mockCampaign = fundItems.find(item => item.id === campaignId);
+
+            if (mockCampaign) {
+              console.log(`POST /api/contributions - Found campaign ${campaignId} in mock data`);
+
+              // Create the campaign in the database from mock data
+              campaign = new FundItem(mockCampaign);
+              await campaign.save();
+              console.log(`POST /api/contributions - Saved mock campaign ${campaignId} to database`);
+            }
+          } else if (!campaign) {
+            console.log(`POST /api/contributions - Not a valid ObjectId or mock ID, skipping search`);
           }
         }
 

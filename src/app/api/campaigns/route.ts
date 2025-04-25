@@ -79,6 +79,19 @@ export async function GET(request: Request) {
         }
       }
 
+      // If we're looking for campaigns by creatorId and it's 'user1', return mock data
+      if (creatorId === 'user1') {
+        console.log('GET /api/campaigns - Using mock data for user1');
+        try {
+          const { fundItems } = await import('@/data/mockData');
+          const userCampaigns = fundItems.filter(item => item.creatorId === 'user1');
+          console.log(`GET /api/campaigns - Found ${userCampaigns.length} mock campaigns for user1`);
+          return NextResponse.json(userCampaigns);
+        } catch (mockError) {
+          console.error('GET /api/campaigns - Error loading mock data:', mockError);
+        }
+      }
+
       console.log('GET /api/campaigns - Returning empty array');
       return NextResponse.json([]);
     }

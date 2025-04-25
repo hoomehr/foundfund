@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { FundItem, Contribution } from '@/types';
 import { getContributionsByContributor, getCampaignById } from '@/lib/api';
+import ContributionDetailsModal from '@/components/ContributionDetailsModal';
+import BackersModal from '@/components/BackersModal';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -106,7 +108,9 @@ export default function InvestmentsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedContribution, setSelectedContribution] = useState<any | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState<boolean>(false);
+  const [isBackersModalOpen, setIsBackersModalOpen] = useState<boolean>(false);
+  const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
 
   // Analytics data
   const totalInvested = contributions.reduce((sum, contrib) => sum + contrib.amount, 0);
@@ -178,14 +182,26 @@ export default function InvestmentsPage() {
     fetchData();
   }, [user, isAuthenticated]);
 
-  const openModal = (contribution: any) => {
+  const openDetailsModal = (contribution: any) => {
     setSelectedContribution(contribution);
-    setIsModalOpen(true);
+    setIsDetailsModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const closeDetailsModal = () => {
+    setIsDetailsModalOpen(false);
     setSelectedContribution(null);
+  };
+
+  const openBackersModal = (campaign: any, campaignContributions: any[]) => {
+    setSelectedCampaign(campaign);
+    // In a real app, you would fetch the contributions for this campaign
+    // For now, we'll just use the current user's contribution
+    setIsBackersModalOpen(true);
+  };
+
+  const closeBackersModal = () => {
+    setIsBackersModalOpen(false);
+    setSelectedCampaign(null);
   };
 
   // Format date to a readable string
@@ -282,7 +298,7 @@ export default function InvestmentsPage() {
             <div
               key={contribution.id}
               className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow cursor-pointer"
-              onClick={() => openModal(contribution)}
+              onClick={() => openDetailsModal(contribution)}
               style={{ borderColor: 'var(--border)' }}
             >
               <div className="flex flex-col md:flex-row gap-6">
@@ -337,9 +353,21 @@ export default function InvestmentsPage() {
                       }}
                     ></div>
                   </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>${contribution.campaign.currentAmount.toLocaleString()} raised</span>
-                    <span>${contribution.campaign.fundingGoal.toLocaleString()} goal</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground">${contribution.campaign.currentAmount.toLocaleString()} raised</span>
+                    <span className="text-muted-foreground">${contribution.campaign.fundingGoal.toLocaleString()} goal</span>
+                  </div>
+
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent opening the details modal
+                        openBackersModal(contribution.campaign, [contribution]);
+                      }}
+                      className="text-xs text-black bg-white px-2 py-1 rounded-md border border-white/30 hover:bg-white/90 transition-colors shadow-[0_0_10px_rgba(255,255,255,0.5),_0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_15px_rgba(255,255,255,0.7),_0_0_30px_rgba(255,255,255,0.4)]"
+                    >
+                      View All Backers
+                    </button>
                   </div>
                 </div>
               </div>
@@ -348,128 +376,24 @@ export default function InvestmentsPage() {
         </div>
       )}
 
-      {/* Modal for expanded view */}
-      {isModalOpen && selectedContribution && (
-        <div className="fixed inset-0 bg-black/80 flex items-end justify-center z-50 p-4 md:items-center">
-          <div
-            className="bg-card border rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(255,255,255,0.25),_0_0_80px_rgba(255,255,255,0.15)]"
-            style={{ borderColor: 'var(--border)' }}
-          >
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">{selectedContribution.campaign.name}</h2>
-                <button
-                  onClick={closeModal}
-                  className="text-muted-foreground hover:text-white"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+      {/* Contribution Details Modal */}
+      {selectedContribution && (
+        <ContributionDetailsModal
+          contribution={selectedContribution}
+          campaign={selectedContribution?.campaign}
+          isOpen={isDetailsModalOpen}
+          onClose={closeDetailsModal}
+        />
+      )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-                <div>
-                  <div className="relative h-60 w-full rounded-lg overflow-hidden mb-4">
-                    <Image
-                      src={selectedContribution.campaign.imageUrl}
-                      alt={selectedContribution.campaign.name}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">Creator</p>
-                      <div className="flex items-center">
-                        <div className="relative h-6 w-6 rounded-full overflow-hidden mr-2">
-                          <Image
-                            src={selectedContribution.campaign.creator.avatarUrl}
-                            alt={selectedContribution.campaign.creator.name}
-                            fill
-                            style={{ objectFit: 'cover' }}
-                          />
-                        </div>
-                        <p className="text-sm">{selectedContribution.campaign.creator.name}</p>
-                      </div>
-                    </div>
-                    <div className="bg-black/20 rounded-lg p-4">
-                      <p className="text-xs text-muted-foreground mb-1">Category</p>
-                      <p className="text-sm capitalize">{selectedContribution.campaign.category}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Your Contribution</h3>
-                  <div className="bg-black/20 rounded-lg p-4 mb-4">
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Amount</p>
-                        <p className="text-2xl font-bold text-shadow-green">${selectedContribution.amount}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Date</p>
-                        <p className="text-sm">{formatDate(selectedContribution.createdAt)}</p>
-                      </div>
-                    </div>
-
-                    {selectedContribution.message && (
-                      <div className="mb-4">
-                        <p className="text-xs text-muted-foreground mb-1">Your Message</p>
-                        <p className="text-sm italic">"{selectedContribution.message}"</p>
-                      </div>
-                    )}
-
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Status</p>
-                      <div className="flex items-center">
-                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                          selectedContribution.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                        }`}></span>
-                        <p className="text-sm capitalize">{selectedContribution.status}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <h3 className="text-lg font-semibold mb-2">Campaign Progress</h3>
-                  <div className="bg-black/20 rounded-lg p-4">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>${selectedContribution.campaign.currentAmount.toLocaleString()} raised</span>
-                      <span>${selectedContribution.campaign.fundingGoal.toLocaleString()} goal</span>
-                    </div>
-                    <div className="w-full bg-gray-900 rounded-full h-2 shadow-inner mb-2">
-                      <div
-                        className="bg-green-500 h-2 rounded-full funding-phase-indicator"
-                        style={{
-                          width: `${getProgressPercentage(selectedContribution.campaign)}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <div className="flex justify-between items-center mt-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Timeline</p>
-                        <p className="text-sm">{getDaysInfo(selectedContribution)}</p>
-                      </div>
-                      <Link
-                        href={`/foundfund/projects/${selectedContribution.campaign.id}`}
-                        className="bg-white text-black text-sm font-medium py-1.5 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
-                      >
-                        View Project
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Project Description</h3>
-                <p className="text-muted-foreground">{selectedContribution.campaign.description}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Backers Modal */}
+      {selectedCampaign && (
+        <BackersModal
+          campaign={selectedCampaign}
+          contributions={contributions.filter(c => c.campaignId === selectedCampaign.id || c.fundItemId === selectedCampaign.id)}
+          isOpen={isBackersModalOpen}
+          onClose={closeBackersModal}
+        />
       )}
     </div>
   );

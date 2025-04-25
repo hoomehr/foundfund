@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Fallback to hardcoded user if not found in database
             console.log('User not found in database, using hardcoded data');
             demoUser = {
-              id: 'user1',
+              id: 'user1', // Use 'user1' to match the mock data
               name: 'John Doe',
               email: 'john@example.com',
               username: 'johndoe',
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Fallback to hardcoded user if API fails
           console.log('API call failed, using hardcoded data');
           demoUser = {
-            id: 'user1',
+            id: 'user1', // Use 'user1' to match the mock data
             name: 'John Doe',
             email: 'john@example.com',
             username: 'johndoe',

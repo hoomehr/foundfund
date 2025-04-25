@@ -53,25 +53,91 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
+    // Update form data based on field type
     if (name === 'fundingGoal') {
-      setFormData({
-        ...formData,
+      setFormData(prevData => ({
+        ...prevData,
         [name]: value === '' ? undefined : Number(value),
-      });
+      }));
     } else {
-      setFormData({
-        ...formData,
+      setFormData(prevData => ({
+        ...prevData,
         [name]: value,
-      });
+      }));
     }
 
     // Clear error when field is edited
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors(prevErrors => ({
+        ...prevErrors,
         [name]: '',
-      });
+      }));
     }
+
+    // Run validation for this field immediately for better feedback
+    validateField(name, name === 'fundingGoal' ? (value === '' ? undefined : Number(value)) : value);
+  };
+
+  // Validate a single field
+  const validateField = (name: string, value: any): boolean => {
+    let isValid = true;
+    let errorMessage = '';
+
+    switch (name) {
+      case 'name':
+        if (!value || (typeof value === 'string' && !value.trim())) {
+          isValid = false;
+          errorMessage = 'Name is required';
+        }
+        break;
+      case 'description':
+        if (!value || (typeof value === 'string' && !value.trim())) {
+          isValid = false;
+          errorMessage = 'Description is required';
+        }
+        break;
+      case 'category':
+        if (!value) {
+          isValid = false;
+          errorMessage = 'Category is required';
+        }
+        break;
+      case 'fundingGoal':
+        if (!value || value <= 0) {
+          isValid = false;
+          errorMessage = 'Funding goal must be greater than 0';
+        }
+        break;
+      case 'endDate':
+        if (!value) {
+          isValid = false;
+          errorMessage = 'End date is required';
+        } else {
+          try {
+            const endDate = new Date(value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (endDate <= today) {
+              isValid = false;
+              errorMessage = 'End date must be in the future';
+            }
+          } catch (error) {
+            isValid = false;
+            errorMessage = 'Invalid date format';
+          }
+        }
+        break;
+      default:
+        break;
+    }
+
+    // Update the error state for this field
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: errorMessage
+    }));
+
+    return isValid;
   };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,10 +195,18 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
       console.log('Image uploaded successfully:', data);
 
       // Update the form data with the image URL
-      setFormData({
-        ...formData,
+      setFormData(prevFormData => ({
+        ...prevFormData,
         imageUrl: data.url // Use the URL returned from the server
-      });
+      }));
+
+      // Clear any image errors
+      if (errors.imageUrl) {
+        setErrors(prevErrors => ({
+          ...prevErrors,
+          imageUrl: ''
+        }));
+      }
 
       console.log('Form data updated with image URL:', data.url);
     } catch (error) {
@@ -199,49 +273,46 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    // Validate all required fields
+    const nameValid = validateField('name', formData.name);
+    const descriptionValid = validateField('description', formData.description);
+    const categoryValid = validateField('category', formData.category);
+    const fundingGoalValid = validateField('fundingGoal', formData.fundingGoal);
+    const endDateValid = validateField('endDate', formData.endDate);
 
-    if (!formData.name?.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.description?.trim()) {
-      newErrors.description = 'Description is required';
-    }
-
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
-    }
-
-    if (!formData.fundingGoal || formData.fundingGoal <= 0) {
-      newErrors.fundingGoal = 'Funding goal must be greater than 0';
-    }
-
-    if (!formData.endDate) {
-      newErrors.endDate = 'End date is required';
-    } else {
-      try {
-        const endDate = new Date(formData.endDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to beginning of day for fair comparison
-        if (endDate <= today) {
-          newErrors.endDate = 'End date must be in the future';
-        }
-      } catch (error) {
-        newErrors.endDate = 'Invalid date format';
-      }
-    }
-
+    // Validate image separately since it's not a direct form field
+    let imageValid = true;
     if (!imagePreview && !formData.imageUrl) {
-      newErrors.imageUrl = 'Project image is required';
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        imageUrl: 'Project image is required'
+      }));
+      imageValid = false;
+    } else {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        imageUrl: ''
+      }));
     }
 
+    // Validate tags separately
+    let tagsValid = true;
     if (!formData.tags || formData.tags.length === 0) {
-      newErrors.tags = 'At least one tag is required';
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        tags: 'At least one tag is required'
+      }));
+      tagsValid = false;
+    } else {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        tags: ''
+      }));
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Return true only if all validations pass
+    return nameValid && descriptionValid && categoryValid &&
+           fundingGoalValid && endDateValid && imageValid && tagsValid;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -332,15 +403,29 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
               <label htmlFor="endDate" className="block text-sm font-medium text-card-foreground mb-2">
                 Campaign End Date *
               </label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className={`w-full rounded-md bg-background border ${errors.endDate ? 'border-red-500' : 'border-input'} px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 focus:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all`}
-              />
+              <div className="relative">
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={new Date().toISOString().split('T')[0]} // Set minimum date to today
+                  className={`w-full rounded-md bg-background border ${errors.endDate ? 'border-red-500' : 'border-input'} px-3 py-2 focus:outline-none focus:ring-2 focus:ring-white/50 focus:shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all`}
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+              </div>
               {errors.endDate && <p className="mt-1 text-sm text-red-500">{errors.endDate}</p>}
+              <p className="mt-1 text-xs text-muted-foreground">
+                Select a date at least one day in the future
+              </p>
             </div>
 
             <div>

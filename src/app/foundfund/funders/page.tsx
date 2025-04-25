@@ -133,6 +133,7 @@ export default function FundersPage() {
               key={item.id}
               fundItem={item}
               onContribute={handleContribute}
+              isDiscoverPage={true}
             />
           ))}
         </div>
