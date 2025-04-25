@@ -8,6 +8,7 @@ import { getCampaignById } from '@/lib/api'
 import { FundItem, Contribution } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 import BackersModal from '@/components/BackersModal'
+import ContributionSuccessModal from '@/components/ContributionSuccessModal'
 
 // Helper function to determine funding phase based on percentage
 const getFundingPhase = (fundItem: FundItem): string => {
@@ -29,6 +30,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isBackersModalOpen, setIsBackersModalOpen] = useState<boolean>(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
+  const [lastContributionAmount, setLastContributionAmount] = useState<number>(0);
   const [contributions, setContributions] = useState<Contribution[]>([]);
 
   // Unwrap params using React.use()
@@ -176,8 +179,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         currentAmount: fundItem.currentAmount + contributionAmount
       });
 
-      // Show success message
-      alert(`Thank you for contributing $${contributionAmount} to ${fundItem.name}!`);
+      // Store the contribution amount for the success modal
+      setLastContributionAmount(contributionAmount);
+
+      // Show success modal
+      setIsSuccessModalOpen(true);
 
       setIsContributing(false);
       setContributionAmount(10);
@@ -385,6 +391,16 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
           contributions={contributions}
           isOpen={isBackersModalOpen}
           onClose={() => setIsBackersModalOpen(false)}
+        />
+      )}
+
+      {/* Contribution Success Modal */}
+      {fundItem && (
+        <ContributionSuccessModal
+          campaign={fundItem}
+          amount={lastContributionAmount}
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
         />
       )}
     </div>

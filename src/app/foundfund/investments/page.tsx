@@ -257,19 +257,19 @@ export default function InvestmentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Total Invested</h3>
-          <p className="text-3xl font-bold text-shadow-green">${totalInvested}</p>
+          <p className="text-2xl font-bold text-shadow-green">${totalInvested.toLocaleString()}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Projects Backed</h3>
-          <p className="text-3xl font-bold text-shadow-green">{totalProjects}</p>
+          <p className="text-2xl font-bold text-shadow-green">{totalProjects}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Avg. Contribution</h3>
-          <p className="text-3xl font-bold text-shadow-green">${avgContribution.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-shadow-green">${avgContribution.toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Successful Projects</h3>
-          <p className="text-3xl font-bold text-shadow-green">{successfulProjects}</p>
+          <p className="text-2xl font-bold text-shadow-green">{successfulProjects}</p>
         </div>
       </div>
 
@@ -293,7 +293,7 @@ export default function InvestmentsPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {contributions.map((contribution) => (
             <div
               key={contribution.id}
@@ -301,9 +301,9 @@ export default function InvestmentsPage() {
               onClick={() => openDetailsModal(contribution)}
               style={{ borderColor: 'var(--border)' }}
             >
-              <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex flex-col gap-4">
                 {/* Campaign Image */}
-                <div className="w-full md:w-1/4">
+                <div className="w-full">
                   <div className="relative h-40 w-full rounded-lg overflow-hidden">
                     <Image
                       src={contribution.campaign.imageUrl}
@@ -315,7 +315,7 @@ export default function InvestmentsPage() {
                 </div>
 
                 {/* Campaign Details */}
-                <div className="w-full md:w-3/4">
+                <div className="w-full">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-xl font-semibold">{contribution.campaign.name}</h3>
                     <span className="bg-black/30 text-green-400 text-xs px-2 py-1 rounded-md border border-green-500/30 funding-phase-indicator">
@@ -325,10 +325,10 @@ export default function InvestmentsPage() {
 
                   <p className="text-muted-foreground mb-4 line-clamp-2">{contribution.campaign.description}</p>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-xs text-muted-foreground">Your Contribution</p>
-                      <p className="text-lg font-semibold text-shadow-green">${contribution.amount}</p>
+                      <p className="text-lg font-semibold text-shadow-green">${contribution.amount.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Date</p>

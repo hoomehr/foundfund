@@ -22,7 +22,7 @@ export default function CreatorsPage() {
     }
   }, [isAuthenticated, router]);
 
-  // Fetch user campaigns
+  // Fetch user campaigns and their contributions
   useEffect(() => {
     const fetchData = async () => {
       if (!isAuthenticated || !user?.id) return;
@@ -36,7 +36,25 @@ export default function CreatorsPage() {
         console.log('Using userId for API call:', userId);
 
         const campaigns = await getCampaignsByCreator(userId);
-        setUserCampaigns(campaigns || []);
+
+        // Fetch contributions for each campaign
+        const campaignsWithContributions = await Promise.all(
+          (campaigns || []).map(async (campaign) => {
+            try {
+              const response = await fetch(`/api/contributions?campaignId=${campaign.id}`);
+              if (response.ok) {
+                const contributions = await response.json();
+                return { ...campaign, contributions };
+              }
+              return campaign;
+            } catch (error) {
+              console.error(`Error fetching contributions for campaign ${campaign.id}:`, error);
+              return campaign;
+            }
+          })
+        );
+
+        setUserCampaigns(campaignsWithContributions || []);
         setError(null);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -55,6 +73,20 @@ export default function CreatorsPage() {
   const avgFunding = totalCampaigns > 0 ? totalRaised / totalCampaigns : 0;
   const successfulCampaigns = userCampaigns.filter(campaign => campaign.status === 'funded').length;
 
+  // Calculate total funders (count unique users who backed campaigns)
+  const allContributorIds = new Set();
+  userCampaigns.forEach(campaign => {
+    // If the campaign has contributions data, add unique contributor IDs to the set
+    if (campaign.contributions && Array.isArray(campaign.contributions)) {
+      campaign.contributions.forEach(contribution => {
+        if (contribution.contributorId) {
+          allContributorIds.add(contribution.contributorId);
+        }
+      });
+    }
+  });
+  const totalFunders = allContributorIds.size;
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="flex justify-between items-center mb-6">
@@ -68,22 +100,26 @@ export default function CreatorsPage() {
       </div>
 
       {/* Analytics Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-10">
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Total Campaigns</h3>
-          <p className="text-3xl font-bold text-shadow-green">{totalCampaigns}</p>
+          <p className="text-2xl font-bold text-shadow-green">{totalCampaigns}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Total Raised</h3>
-          <p className="text-3xl font-bold text-shadow-green">${totalRaised}</p>
+          <p className="text-2xl font-bold text-shadow-green">${totalRaised.toLocaleString()}</p>
+        </div>
+        <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <h3 className="text-lg text-muted-foreground mb-2">Total Funders</h3>
+          <p className="text-2xl font-bold text-shadow-green">{totalFunders.toLocaleString()}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Avg. Funding</h3>
-          <p className="text-3xl font-bold text-shadow-green">${avgFunding.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-shadow-green">${avgFunding.toLocaleString(undefined, {maximumFractionDigits: 2})}</p>
         </div>
         <div className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <h3 className="text-lg text-muted-foreground mb-2">Successful Campaigns</h3>
-          <p className="text-3xl font-bold text-shadow-green">{successfulCampaigns}</p>
+          <p className="text-2xl font-bold text-shadow-green">{successfulCampaigns}</p>
         </div>
       </div>
 
