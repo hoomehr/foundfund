@@ -130,6 +130,32 @@ export async function getCampaignsByCreator(creatorId: string): Promise<FundItem
   return getCampaigns({ creatorId });
 }
 
+export async function setFeaturedStatus(id: string, featured: boolean): Promise<FundItem> {
+  try {
+    console.log(`Setting featured status for campaign ${id} to ${featured}`);
+    const response = await fetch(`${API_BASE}/campaigns/feature`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, featured }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error setting featured status for campaign ${id}:`, errorData);
+      throw new Error(`Failed to set featured status for campaign ${id}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully set featured status for campaign ${id}`);
+    return data;
+  } catch (error) {
+    console.error(`Error in setFeaturedStatus(${id}):`, error);
+    throw error;
+  }
+}
+
 // Contribution API
 export async function getContributions(params?: {
   campaignId?: string;
@@ -187,6 +213,64 @@ export async function getContributionsByUser(userId: string): Promise<Contributi
 
 export async function getContributionsByContributor(contributorId: string): Promise<Contribution[]> {
   return getContributions({ contributorId });
+}
+
+export async function createContribution(contribution: Partial<Contribution>): Promise<Contribution> {
+  try {
+    console.log(`Creating contribution for campaign ${contribution.campaignId}`);
+    const response = await fetch(`${API_BASE}/contributions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(contribution),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error creating contribution:`, errorData);
+      throw new Error(`Failed to create contribution: ${errorData?.error || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully created contribution`);
+    return data;
+  } catch (error) {
+    console.error(`Error in createContribution:`, error);
+    throw error;
+  }
+}
+
+export async function createStripeCheckoutSession(data: {
+  campaignId: string;
+  amount: number;
+  userId: string;
+  message?: string;
+  anonymous?: boolean;
+}): Promise<{ sessionId: string; url: string }> {
+  try {
+    console.log(`Creating Stripe checkout session for campaign ${data.campaignId}`);
+    const response = await fetch(`${API_BASE}/stripe/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error creating Stripe checkout session:`, errorData);
+      throw new Error(`Failed to create checkout session: ${errorData?.error || response.statusText}`);
+    }
+
+    const responseData = await response.json();
+    console.log(`Successfully created Stripe checkout session`);
+    return responseData;
+  } catch (error) {
+    console.error(`Error in createStripeCheckoutSession:`, error);
+    throw error;
+  }
 }
 
 // Helper functions

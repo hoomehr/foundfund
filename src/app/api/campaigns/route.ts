@@ -30,8 +30,9 @@ export async function GET(request: Request) {
       query.status = status;
     }
 
-    if (featured) {
+    if (featured !== null && featured !== undefined) {
       query.featured = featured === 'true';
+      console.log('GET /api/campaigns - Setting featured filter:', query.featured);
     }
 
     console.log('GET /api/campaigns - Executing query:', JSON.stringify(query));

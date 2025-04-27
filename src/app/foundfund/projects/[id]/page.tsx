@@ -3,12 +3,13 @@
 import React, { useState, use, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { getCampaignById } from '@/lib/api'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getCampaignById, createStripeCheckoutSession } from '@/lib/api'
 import { FundItem, Contribution } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
 import BackersModal from '@/components/BackersModal'
 import ContributionSuccessModal from '@/components/ContributionSuccessModal'
+import { getStripe } from '@/lib/stripe'
 
 // Helper function to determine funding phase based on percentage
 const getFundingPhase = (fundItem: FundItem): string => {
@@ -23,6 +24,7 @@ const getFundingPhase = (fundItem: FundItem): string => {
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated } = useAuth();
   const [contributionAmount, setContributionAmount] = useState<number>(10);
   const [isContributing, setIsContributing] = useState<boolean>(false);
@@ -33,9 +35,25 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
   const [lastContributionAmount, setLastContributionAmount] = useState<number>(0);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [paymentCanceled, setPaymentCanceled] = useState<boolean>(false);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
+
+  // Check for payment canceled parameter
+  useEffect(() => {
+    const paymentCanceledParam = searchParams.get('payment_canceled');
+    if (paymentCanceledParam === 'true') {
+      setPaymentCanceled(true);
+      // Clear the parameter after 5 seconds
+      setTimeout(() => {
+        setPaymentCanceled(false);
+        // Remove the parameter from the URL without refreshing the page
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }, 5000);
+    }
+  }, [searchParams]);
 
   // Fetch fund item data
   useEffect(() => {
@@ -131,60 +149,69 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     try {
       setIsContributing(true);
 
-      // Create the contribution object
-      const contribution = {
-        fundItemId: fundItem.id,
+      // Create the checkout data
+      const checkoutData = {
         campaignId: fundItem.id,
-        contributorId: user?.id,
-        userId: user?.id,
         amount: contributionAmount,
-        status: 'completed',
+        userId: user?.id,
         message: '',
-        anonymous: false,
-        createdAt: new Date().toISOString()
+        anonymous: false
       };
 
-      console.log('Submitting contribution:', contribution);
+      console.log('Creating Stripe checkout session:', checkoutData);
 
-      // Make API call to save the contribution
-      const response = await fetch('/api/contributions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(contribution),
-      });
-
+      // Make API call to create a Stripe checkout session
       let responseData;
       try {
-        responseData = await response.json();
+        responseData = await createStripeCheckoutSession(checkoutData);
       } catch (error) {
-        console.error('Error parsing response:', error);
-        throw new Error('Failed to parse server response');
+        console.error('Error creating Stripe checkout session:', error);
+
+        // If we're in development mode, use a mock response for testing
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using mock Stripe checkout session for development');
+          responseData = {
+            sessionId: 'mock_session_id',
+            url: `http://localhost:3000/foundfund/payment/success?session_id=mock_session_id&campaign_id=${fundItem.id}&amount=${contributionAmount}&user_id=${user?.id}&message=&anonymous=false`
+          };
+        } else {
+          throw error;
+        }
       }
 
-      if (!response.ok) {
-        console.error('Error response from server:', responseData);
-        throw new Error(responseData?.error || 'Failed to save contribution');
-      }
-
-      console.log('Contribution saved:', responseData);
-
-      // The API now handles updating the campaign amount, but we'll update the UI
-      // to reflect the change immediately
-
-      // Update the UI
-      setFundItem({
-        ...fundItem,
-        currentAmount: fundItem.currentAmount + contributionAmount
-      });
+      console.log('Checkout session created:', responseData);
 
       // Store the contribution amount for the success modal
       setLastContributionAmount(contributionAmount);
 
-      // Show success modal
-      setIsSuccessModalOpen(true);
+      // Redirect to Stripe Checkout
+      const stripe = await getStripe();
+      if (!stripe) {
+        console.error('Failed to initialize Stripe. Check your environment variables.');
+        alert('Payment system is not available at the moment. Please try again later or contact support.');
+        setIsContributing(false);
+        return;
+      }
 
+      // If we have a URL, redirect directly
+      if (responseData.url) {
+        console.log('Redirecting to Stripe Checkout URL:', responseData.url);
+        window.location.href = responseData.url;
+        return;
+      }
+
+      // Otherwise use the session ID
+      console.log('Redirecting to Stripe Checkout with session ID:', responseData.sessionId);
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: responseData.sessionId,
+      });
+
+      if (error) {
+        console.error('Stripe redirect error:', error);
+        throw new Error(error.message || 'Failed to redirect to payment page');
+      }
+
+      // Reset the form (this code will only run if the redirect fails)
       setIsContributing(false);
       setContributionAmount(10);
     } catch (error: any) {
@@ -208,6 +235,13 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="container mx-auto px-4 py-12">
+      {paymentCanceled && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 px-4 py-3 rounded-lg mb-6">
+          <h3 className="font-bold mb-1">Payment Canceled</h3>
+          <p>Your payment was canceled. No contribution has been made.</p>
+        </div>
+      )}
+
       <button
         onClick={() => router.push('/foundfund/funders')}
         className="bg-white text-black mb-6 flex items-center py-2 px-4 rounded-2xl transition-colors shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)]"
