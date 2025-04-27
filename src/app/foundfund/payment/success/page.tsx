@@ -23,21 +23,58 @@ export default function PaymentSuccessPage() {
       try {
         setLoading(true);
 
+        console.log('\n\n=== PAYMENT SUCCESS PAGE - STARTING PAYMENT PROCESSING ===');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('URL:', window.location.href);
+
         // Get parameters from URL
+        console.log('Raw search params:', Object.fromEntries([...searchParams.entries()]));
+
         const sessionId = searchParams.get('session_id');
         const campaignId = searchParams.get('campaign_id');
-        const amount = parseFloat(searchParams.get('amount') || '0');
+        const amountStr = searchParams.get('amount');
+        const amount = parseFloat(amountStr || '0');
         const userId = searchParams.get('user_id');
         const message = searchParams.get('message');
         const anonymous = searchParams.get('anonymous') === 'true';
         const campaignName = searchParams.get('campaign_name');
 
+        // Log all parameters
+        console.log('Parsed parameters:');
+        console.log(`- Session ID: ${sessionId || 'MISSING'}`);
+        console.log(`- Campaign ID: ${campaignId || 'MISSING'}`);
+        console.log(`- Amount (raw): ${amountStr || 'MISSING'}`);
+        console.log(`- Amount (parsed): ${amount}`);
+        console.log(`- User ID: ${userId || 'MISSING'}`);
+        console.log(`- Message: ${message || 'N/A'}`);
+        console.log(`- Anonymous: ${anonymous ? 'Yes' : 'No'}`);
+        console.log(`- Campaign Name: ${campaignName || 'N/A'}`);
+
         // Validate parameters
-        if (!sessionId || !campaignId || !amount || !userId) {
-          setError('Missing required parameters');
+        const missingParams = [];
+        if (!sessionId) missingParams.push('session_id');
+        if (!campaignId) missingParams.push('campaign_id');
+        if (!amountStr) missingParams.push('amount');
+        if (isNaN(amount)) missingParams.push('valid amount');
+        if (!userId) missingParams.push('user_id');
+
+        if (missingParams.length > 0) {
+          const errorMsg = `Missing required parameters: ${missingParams.join(', ')}`;
+          console.error(`❌ ${errorMsg}`);
+          setError(errorMsg);
           setLoading(false);
           return;
         }
+
+        if (amount <= 0) {
+          const errorMsg = `Invalid amount: ${amount}`;
+          console.error(`❌ ${errorMsg}`);
+          setError(errorMsg);
+          setLoading(false);
+          return;
+        }
+
+        console.log('✅ All required parameters present and valid');
 
         // If we have a campaign name from the URL but no campaign data yet,
         // create a temporary campaign object with the name
@@ -90,138 +127,295 @@ export default function PaymentSuccessPage() {
         console.log('Message:', message || 'N/A');
         console.log('Anonymous:', anonymous === 'true' ? 'Yes' : 'No');
 
-        // USING THE PROCESS-PAYMENT API ENDPOINT
+        // USING THE DIRECT-CREATE API ENDPOINT
         try {
-          console.log('\n=== CALLING PROCESS-PAYMENT API ENDPOINT ===');
+          console.log('\n=== CALLING DIRECT-CREATE API ENDPOINT ===');
+          console.log('Request URL:', '/api/contributions/direct-create');
+          console.log('Request method: POST');
 
-          const response = await fetch('/api/contributions/process-payment', {
+          const requestBody = {
+            sessionId,
+            campaignId,
+            userId,
+            amount: amount,
+            message: message || '',
+            anonymous: anonymous,
+          };
+
+          console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+          const startTime = Date.now();
+          console.log('Request start time:', new Date(startTime).toISOString());
+
+          const response = await fetch('/api/contributions/direct-create', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              sessionId,
-              campaignId,
-              userId,
-              amount: parseFloat(amount.toString()),
-              message: message || '',
-              anonymous: anonymous === 'true',
-            }),
+            body: JSON.stringify(requestBody),
           });
 
+          const endTime = Date.now();
+          console.log('Request end time:', new Date(endTime).toISOString());
+          console.log('Request duration:', endTime - startTime, 'ms');
+
+          console.log('Response status:', response.status);
+          console.log('Response status text:', response.statusText);
+
           if (response.ok) {
-            const data = await response.json();
-            console.log('✅ Process-payment API succeeded:', data);
+            let data;
+            try {
+              data = await response.json();
+              console.log('Response data:', JSON.stringify(data, null, 2));
+            } catch (parseError) {
+              console.error('❌ Error parsing response JSON:', parseError);
+              throw new Error('Failed to parse API response');
+            }
+
+            console.log('✅ Direct-create API succeeded');
 
             // Update the campaign state for the UI if available
             if (data.campaign) {
+              console.log('Updating campaign state with:', data.campaign.name);
               setCampaign(data.campaign);
             }
 
             console.log('\n=== PAYMENT PROCESSING COMPLETED SUCCESSFULLY ===');
           } else {
-            console.error('❌ Process-payment API failed:', await response.text());
-            throw new Error('Process-payment API failed');
+            let errorText;
+            try {
+              errorText = await response.text();
+              console.error('❌ Direct-create API failed:', errorText);
+            } catch (textError) {
+              console.error('❌ Error reading response text:', textError);
+              errorText = 'Could not read error response';
+            }
+
+            throw new Error(`Direct-create API failed: ${response.status} ${response.statusText} - ${errorText}`);
           }
         } catch (error) {
           console.error('❌ Error processing payment:', error);
 
-          // Try fallback approach - call the direct-payment endpoint
-          console.log('\n=== TRYING FALLBACK APPROACH - DIRECT-PAYMENT API ===');
+          if (error instanceof Error) {
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+          }
+
+          // Try fallback approach - call the process-payment endpoint
+          console.log('\n=== TRYING FALLBACK APPROACH - PROCESS-PAYMENT API ===');
 
           try {
-            const response = await fetch('/api/contributions/direct-payment', {
+            console.log('Request URL:', '/api/contributions/process-payment');
+            console.log('Request method: POST');
+
+            const requestBody = {
+              sessionId,
+              campaignId,
+              userId,
+              amount: amount,
+              message: message || '',
+              anonymous: anonymous,
+            };
+
+            console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+            const startTime = Date.now();
+            console.log('Request start time:', new Date(startTime).toISOString());
+
+            const response = await fetch('/api/contributions/process-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                campaignId: campaignId,
-                userId: userId,
-                amount: parseFloat(amount.toString()),
-                message: message || '',
-                anonymous: anonymous === 'true',
-                stripeSessionId: sessionId,
-              }),
+              body: JSON.stringify(requestBody),
             });
 
+            const endTime = Date.now();
+            console.log('Request end time:', new Date(endTime).toISOString());
+            console.log('Request duration:', endTime - startTime, 'ms');
+
+            console.log('Response status:', response.status);
+            console.log('Response status text:', response.statusText);
+
             if (response.ok) {
-              const data = await response.json();
-              console.log('✅ Direct-payment API succeeded:', data);
+              let data;
+              try {
+                data = await response.json();
+                console.log('Response data:', JSON.stringify(data, null, 2));
+              } catch (parseError) {
+                console.error('❌ Error parsing response JSON:', parseError);
+                throw new Error('Failed to parse API response');
+              }
+
+              console.log('✅ Process-payment API succeeded');
 
               // Update the campaign state for the UI if available
               if (data.campaign) {
+                console.log('Updating campaign state with:', data.campaign.name);
                 setCampaign(data.campaign);
               }
             } else {
-              console.error('❌ Direct-payment API failed:', await response.text());
+              let errorText;
+              try {
+                errorText = await response.text();
+                console.error('❌ Process-payment API failed:', errorText);
+              } catch (textError) {
+                console.error('❌ Error reading response text:', textError);
+                errorText = 'Could not read error response';
+              }
 
-              // Final fallback - try the script-direct endpoint
-              console.log('\n=== TRYING FINAL FALLBACK - SCRIPT-DIRECT API ===');
+              // Final fallback - try the direct-payment endpoint
+              console.log('\n=== TRYING FINAL FALLBACK - DIRECT-PAYMENT API ===');
 
               try {
-                const scriptDirectResponse = await fetch('/api/contributions/script-direct', {
+                console.log('Request URL:', '/api/contributions/direct-payment');
+                console.log('Request method: POST');
+
+                const requestBody = {
+                  campaignId: campaignId,
+                  userId: userId,
+                  amount: amount,
+                  message: message || '',
+                  anonymous: anonymous,
+                  stripeSessionId: sessionId,
+                };
+
+                console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+                const startTime = Date.now();
+                console.log('Request start time:', new Date(startTime).toISOString());
+
+                const directPaymentResponse = await fetch('/api/contributions/direct-payment', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({
-                    campaignId: campaignId,
-                    userId: userId,
-                    amount: parseFloat(amount.toString()),
-                    message: message || '',
-                    anonymous: anonymous === 'true',
-                    stripeSessionId: sessionId,
-                  }),
+                  body: JSON.stringify(requestBody),
                 });
 
-                if (scriptDirectResponse.ok) {
-                  const scriptDirectData = await scriptDirectResponse.json();
-                  console.log('✅ Script-direct API succeeded:', scriptDirectData);
+                const endTime = Date.now();
+                console.log('Request end time:', new Date(endTime).toISOString());
+                console.log('Request duration:', endTime - startTime, 'ms');
+
+                console.log('Response status:', directPaymentResponse.status);
+                console.log('Response status text:', directPaymentResponse.statusText);
+
+                if (directPaymentResponse.ok) {
+                  let directPaymentData;
+                  try {
+                    directPaymentData = await directPaymentResponse.json();
+                    console.log('Response data:', JSON.stringify(directPaymentData, null, 2));
+                  } catch (parseError) {
+                    console.error('❌ Error parsing response JSON:', parseError);
+                    throw new Error('Failed to parse API response');
+                  }
+
+                  console.log('✅ Direct-payment API succeeded');
 
                   // Update the campaign state for the UI if available
-                  if (scriptDirectData.campaign) {
-                    setCampaign(scriptDirectData.campaign);
+                  if (directPaymentData.campaign) {
+                    console.log('Updating campaign state with:', directPaymentData.campaign.name);
+                    setCampaign(directPaymentData.campaign);
                   }
                 } else {
-                  console.error('❌ Script-direct API failed:', await scriptDirectResponse.text());
+                  let directPaymentErrorText;
+                  try {
+                    directPaymentErrorText = await directPaymentResponse.text();
+                    console.error('❌ Direct-payment API failed:', directPaymentErrorText);
+                  } catch (textError) {
+                    console.error('❌ Error reading response text:', textError);
+                    directPaymentErrorText = 'Could not read error response';
+                  }
 
                   // Last resort - try the contributions endpoint
                   console.log('\n=== TRYING LAST RESORT - CONTRIBUTIONS API ===');
 
                   try {
+                    console.log('Request URL:', '/api/contributions');
+                    console.log('Request method: POST');
+
+                    const requestBody = {
+                      campaignId: campaignId,
+                      userId: userId,
+                      amount: amount,
+                      message: message || '',
+                      anonymous: anonymous,
+                      stripeSessionId: sessionId,
+                      status: 'completed',
+                    };
+
+                    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+                    const startTime = Date.now();
+                    console.log('Request start time:', new Date(startTime).toISOString());
+
                     const contributionsResponse = await fetch('/api/contributions', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
                       },
-                      body: JSON.stringify({
-                        campaignId: campaignId,
-                        userId: userId,
-                        amount: parseFloat(amount.toString()),
-                        message: message || '',
-                        anonymous: anonymous === 'true',
-                        stripeSessionId: sessionId,
-                        status: 'completed',
-                      }),
+                      body: JSON.stringify(requestBody),
                     });
 
+                    const endTime = Date.now();
+                    console.log('Request end time:', new Date(endTime).toISOString());
+                    console.log('Request duration:', endTime - startTime, 'ms');
+
+                    console.log('Response status:', contributionsResponse.status);
+                    console.log('Response status text:', contributionsResponse.statusText);
+
                     if (contributionsResponse.ok) {
-                      const contributionsData = await contributionsResponse.json();
-                      console.log('✅ Contributions API succeeded:', contributionsData);
+                      let contributionsData;
+                      try {
+                        contributionsData = await contributionsResponse.json();
+                        console.log('Response data:', JSON.stringify(contributionsData, null, 2));
+                      } catch (parseError) {
+                        console.error('❌ Error parsing response JSON:', parseError);
+                        throw new Error('Failed to parse API response');
+                      }
+
+                      console.log('✅ Contributions API succeeded');
                     } else {
-                      console.error('❌ Contributions API failed:', await contributionsResponse.text());
+                      let contribErrorText;
+                      try {
+                        contribErrorText = await contributionsResponse.text();
+                        console.error('❌ Contributions API failed:', contribErrorText);
+                      } catch (textError) {
+                        console.error('❌ Error reading response text:', textError);
+                        contribErrorText = 'Could not read error response';
+                      }
+
+                      console.error('❌ All API fallbacks failed. Payment may not have been recorded.');
                     }
                   } catch (contributionsError) {
                     console.error('❌ Error in contributions API:', contributionsError);
+
+                    if (contributionsError instanceof Error) {
+                      console.error('Error name:', contributionsError.name);
+                      console.error('Error message:', contributionsError.message);
+                      console.error('Error stack:', contributionsError.stack);
+                    }
                   }
                 }
-              } catch (scriptDirectError) {
-                console.error('❌ Error in script-direct API:', scriptDirectError);
+              } catch (directPaymentError) {
+                console.error('❌ Error in direct-payment API:', directPaymentError);
+
+                if (directPaymentError instanceof Error) {
+                  console.error('Error name:', directPaymentError.name);
+                  console.error('Error message:', directPaymentError.message);
+                  console.error('Error stack:', directPaymentError.stack);
+                }
               }
             }
-          } catch (directPaymentError) {
-            console.error('❌ Error in direct-payment API:', directPaymentError);
+          } catch (processPaymentError) {
+            console.error('❌ Error in process-payment API:', processPaymentError);
+
+            if (processPaymentError instanceof Error) {
+              console.error('Error name:', processPaymentError.name);
+              console.error('Error message:', processPaymentError.message);
+              console.error('Error stack:', processPaymentError.stack);
+            }
           }
         }
 

@@ -75,6 +75,21 @@ export async function POST(request: Request) {
     console.log(`Using image URL for Stripe: ${imageUrl}`);
 
     // Create a Stripe checkout session
+    console.log('Creating Stripe checkout session with the following data:');
+    console.log('- Campaign ID:', campaignId);
+    console.log('- Campaign Name:', campaign.name);
+    console.log('- User ID:', userId);
+    console.log('- Amount:', amount);
+    console.log('- Message:', message || 'N/A');
+    console.log('- Anonymous:', anonymous ? 'Yes' : 'No');
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const successUrl = `${baseUrl}/foundfund/payment/success?session_id={CHECKOUT_SESSION_ID}&campaign_id=${campaignId}&amount=${amount}&user_id=${userId}&message=${encodeURIComponent(message || '')}&anonymous=${anonymous || false}&campaign_name=${encodeURIComponent(campaign.name)}`;
+    const cancelUrl = `${baseUrl}/foundfund/projects/${campaignId}?payment_canceled=true`;
+
+    console.log('Success URL:', successUrl.replace('{CHECKOUT_SESSION_ID}', 'CHECKOUT_SESSION_ID_PLACEHOLDER'));
+    console.log('Cancel URL:', cancelUrl);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -92,15 +107,22 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/foundfund/payment/success?session_id={CHECKOUT_SESSION_ID}&campaign_id=${campaignId}&amount=${amount}&user_id=${userId}&message=${encodeURIComponent(message || '')}&anonymous=${anonymous || false}&campaign_name=${encodeURIComponent(campaign.name)}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/foundfund/projects/${campaignId}?payment_canceled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         campaignId,
         userId,
         message: message || '',
         anonymous: anonymous ? 'true' : 'false',
+        campaignName: campaign.name,
+        amount: amount.toString(),
+        timestamp: new Date().toISOString(),
       },
     });
+
+    console.log('✅ Stripe checkout session created successfully');
+    console.log('Session ID:', session.id);
+    console.log('Session URL:', session.url);
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {

@@ -19,6 +19,20 @@ interface PaymentResult {
 }
 
 /**
+ * Helper function to get a human-readable description of the MongoDB connection state
+ */
+function getConnectionStateDescription(state: number): string {
+  switch (state) {
+    case 0: return 'disconnected';
+    case 1: return 'connected';
+    case 2: return 'connecting';
+    case 3: return 'disconnecting';
+    case 99: return 'uninitialized';
+    default: return 'unknown';
+  }
+}
+
+/**
  * Handles a successful payment by creating a contribution and updating campaign stats
  */
 export async function handleSuccessfulPayment({
@@ -44,16 +58,70 @@ export async function handleSuccessfulPayment({
   }
 
   // Check MongoDB connection
+  console.log('MongoDB connection state:',
+    mongoose.connection.readyState,
+    getConnectionStateDescription(mongoose.connection.readyState)
+  );
+
   if (mongoose.connection.readyState !== 1) {
     console.log('MongoDB not connected, attempting to connect...');
     try {
       // Import connectToDatabase dynamically to avoid circular dependencies
       const { connectToDatabase } = await import('@/models');
       await connectToDatabase();
-      console.log('Successfully connected to MongoDB');
+
+      console.log('MongoDB connection state after connecting:',
+        mongoose.connection.readyState,
+        getConnectionStateDescription(mongoose.connection.readyState)
+      );
+
+      if (mongoose.connection.readyState === 1) {
+        console.log('✅ Successfully connected to MongoDB');
+        console.log('MongoDB database name:', mongoose.connection.db?.databaseName);
+
+        // List available collections
+        try {
+          if (mongoose.connection.db) {
+            const collections = await mongoose.connection.db.listCollections().toArray();
+            console.log('Available collections:', collections.map(c => c.name));
+          } else {
+            console.error('❌ MongoDB database connection not established (db is undefined)');
+          }
+        } catch (collError) {
+          console.error('❌ Error listing collections:', collError);
+        }
+      } else {
+        console.error('❌ Failed to connect to MongoDB properly. Connection state:',
+          mongoose.connection.readyState,
+          getConnectionStateDescription(mongoose.connection.readyState)
+        );
+        throw new Error(`Failed to connect to MongoDB. Connection state: ${mongoose.connection.readyState}`);
+      }
     } catch (error) {
-      console.error('Failed to connect to MongoDB:', error);
+      console.error('❌ Failed to connect to MongoDB:', error);
+
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+
       throw new Error('Failed to connect to MongoDB');
+    }
+  } else {
+    console.log('✅ MongoDB already connected');
+    console.log('MongoDB database name:', mongoose.connection.db?.databaseName);
+
+    // List available collections
+    try {
+      if (mongoose.connection.db) {
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        console.log('Available collections:', collections.map(c => c.name));
+      } else {
+        console.error('❌ MongoDB database connection not established (db is undefined)');
+      }
+    } catch (collError) {
+      console.error('❌ Error listing collections:', collError);
     }
   }
 
@@ -62,12 +130,28 @@ export async function handleSuccessfulPayment({
 
   // Ensure db is defined
   if (!mongoose.connection.db) {
+    console.error('❌ MongoDB database connection not established (db is undefined)');
     throw new Error('MongoDB database connection not established');
   }
 
-  const existingContribution = await mongoose.connection.db.collection('contributions').findOne({
-    stripeSessionId: sessionId
-  });
+  let existingContribution;
+  try {
+    console.log('Querying contributions collection for session ID:', sessionId);
+    existingContribution = await mongoose.connection.db.collection('contributions').findOne({
+      stripeSessionId: sessionId
+    });
+    console.log('Query result:', existingContribution ? 'Found contribution' : 'No contribution found');
+  } catch (queryError) {
+    console.error('❌ Error querying for existing contribution:', queryError);
+
+    if (queryError instanceof Error) {
+      console.error('Error name:', queryError.name);
+      console.error('Error message:', queryError.message);
+      console.error('Error stack:', queryError.stack);
+    }
+
+    throw new Error(`Failed to query for existing contribution: ${queryError instanceof Error ? queryError.message : 'Unknown error'}`);
+  }
 
   if (existingContribution) {
     console.log('✅ Contribution already exists:');
