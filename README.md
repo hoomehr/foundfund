@@ -176,13 +176,17 @@ FoundFund uses Stripe for secure payment processing. The payment flow works as f
 
 3. **Success Page**:
    - The success page (`/foundfund/payment/success`) receives the session ID and other metadata.
-   - It creates a contribution record in the database using the `/api/contributions/direct` endpoint.
+   - It attempts to create a contribution record in the database using the `/api/contributions/direct` endpoint.
+   - If that fails, it falls back to the regular `/api/contributions` endpoint.
+   - As a last resort, it directly updates the campaign stats.
    - It displays a success message with campaign details.
 
 4. **Webhook Processing**:
    - Stripe also sends a webhook event to `/api/stripe/webhook` when the payment is completed.
    - The webhook handler creates a contribution record if one doesn't exist yet.
    - It updates the campaign's funding stats (current amount, contributions count, unique contributors).
+
+> **Note**: The system implements multiple redundant approaches to ensure contributions are properly recorded. Both the success page and webhook handler attempt to create contributions, with checks to prevent duplicates. This redundancy ensures that even if one approach fails, the other can still record the contribution.
 
 ### Database Updates
 
@@ -198,6 +202,42 @@ For testing, use Stripe's test cards:
 - Expiration date: Any future date
 - CVC: Any 3 digits
 - ZIP: Any 5 digits
+
+### Troubleshooting Payment Issues
+
+If contributions are not being properly recorded after payments:
+
+1. **Check Stripe Webhook Setup**:
+   - Ensure the Stripe webhook is properly configured in the Stripe Dashboard.
+   - The webhook should point to your application's webhook endpoint (`/api/stripe/webhook`).
+   - The webhook should be configured to listen for the `checkout.session.completed` event.
+   - Verify that the webhook secret is correctly set in your environment variables.
+
+2. **Check MongoDB Connection**:
+   - Ensure the MongoDB connection string is correct in your environment variables.
+   - Check the MongoDB logs for any connection issues.
+   - Verify that the MongoDB user has write permissions to the database.
+
+3. **Check Server Logs**:
+   - Look for any error messages in the server logs related to Stripe or MongoDB.
+   - Check for any failed API calls to `/api/contributions/direct` or `/api/contributions`.
+
+4. **Manual Contribution Creation**:
+   - If automatic contribution creation is failing, you can use the following scripts to manually create contributions:
+     - `src/scripts/add-contribution.js`: General-purpose script for adding contributions.
+       - Run with: `node src/scripts/add-contribution.js`
+     - `src/scripts/add-stripe-contribution.js`: Script for adding contributions for specific Stripe sessions.
+       - Run with: `node src/scripts/add-stripe-contribution.js <session_id> <campaign_id> <user_id> <amount>`
+       - Example: `node src/scripts/add-stripe-contribution.js cs_test_a1xEy6qhmI0xHkpQ9ikLf8py3D1nuhqiOLaFWwZuyt7v0dO5P8jrpKNVab 680adc2a49d548cc43032cad user1 50`
+
+5. **Verify Stripe Events**:
+   - Check the Stripe Dashboard for any failed webhook events.
+   - Verify that the webhook events are being sent to your application.
+   - Use the Stripe CLI to test webhook events locally.
+
+6. **Check Contributions**:
+   - Use the script at `src/scripts/check-contributions.js` to check the current contributions for a campaign.
+   - Run with: `node src/scripts/check-contributions.js`
 
 ## Design System
 

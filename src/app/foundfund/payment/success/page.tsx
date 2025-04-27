@@ -83,17 +83,33 @@ export default function PaymentSuccessPage() {
 
         console.log('Payment success page - Processing session:', sessionId);
 
-        // SIMPLIFIED APPROACH: Make a direct API call to create the contribution
+        // ULTRA SIMPLE APPROACH - JUST DO IT DIRECTLY
         try {
-          console.log('Creating contribution for session:', sessionId);
+          console.log('ULTRA SIMPLE APPROACH - JUST DO IT DIRECTLY');
 
-          // Create a special endpoint for direct contribution creation
-          const directResponse = await fetch('/api/contributions/direct', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+          // Connect to MongoDB directly
+          const { connectToDatabase } = await import('@/models');
+          const mongoose = await import('mongoose');
+          const { v4: uuidv4 } = await import('uuid');
+
+          await connectToDatabase();
+          console.log('Connected to database');
+
+          // 1. Check if contribution already exists
+          console.log(`Checking for existing contribution with session ID: ${sessionId}`);
+          const existingContribution = await mongoose.default.connection.db.collection('contributions').findOne({
+            stripeSessionId: sessionId
+          });
+
+          if (existingContribution) {
+            console.log(`Contribution already exists: ${existingContribution._id}`);
+          } else {
+            // 2. Create contribution
+            console.log('Creating new contribution...');
+            const contributionId = uuidv4();
+            const contributionData = {
+              _id: new mongoose.default.Types.ObjectId(),
+              id: contributionId,
               fundItemId: campaignId,
               userId: userId,
               amount: amount,
@@ -101,62 +117,67 @@ export default function PaymentSuccessPage() {
               anonymous: anonymous === 'true',
               status: 'completed',
               stripeSessionId: sessionId,
-              createdAt: new Date().toISOString(),
-            }),
-          });
+              createdAt: new Date()
+            };
 
-          if (directResponse.ok) {
-            const directData = await directResponse.json();
-            console.log('Successfully created contribution:', directData.id);
-          } else {
-            console.error('Failed to create contribution through direct API');
+            console.log('Contribution data:', contributionData);
 
-            // Fallback: Try the regular contributions API
-            console.log('Fallback: Using regular contributions API');
-            const regularResponse = await fetch('/api/contributions', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                fundItemId: campaignId,
-                userId: userId,
-                amount: amount,
-                message: message || '',
-                anonymous: anonymous === 'true',
-                status: 'completed',
-                stripeSessionId: sessionId,
-                createdAt: new Date().toISOString(),
-              }),
+            // Insert contribution
+            const result = await mongoose.default.connection.db.collection('contributions').insertOne(contributionData);
+            console.log('Contribution created with ID:', result.insertedId);
+
+            // 3. Update campaign
+            console.log(`Updating campaign ${campaignId} with amount ${amount}`);
+
+            // Find campaign
+            const campaign = await mongoose.default.connection.db.collection('funditems').findOne({
+              $or: [
+                { _id: mongoose.default.Types.ObjectId.isValid(campaignId) ? new mongoose.default.Types.ObjectId(campaignId) : null },
+                { id: campaignId }
+              ]
             });
 
-            if (regularResponse.ok) {
-              const regularData = await regularResponse.json();
-              console.log('Successfully created contribution through regular API:', regularData.id);
+            if (!campaign) {
+              console.error(`Campaign not found: ${campaignId}`);
             } else {
-              console.error('Failed to create contribution through regular API');
+              console.log(`Found campaign: ${campaign.name}`);
 
-              // Final fallback: Update campaign directly
-              console.log('Final fallback: Updating campaign directly');
-              const campaignResponse = await fetch(`/api/campaigns/${campaignId}`, {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+              // Check if this is a new contributor
+              const previousContributions = await mongoose.default.connection.db.collection('contributions').find({
+                $or: [
+                  { fundItemId: campaignId, userId: userId },
+                  { campaignId: campaignId, contributorId: userId }
+                ],
+                _id: { $ne: contributionData._id }
+              }).toArray();
+
+              const isNewContributor = previousContributions.length === 0;
+              console.log(`Is new contributor: ${isNewContributor}`);
+
+              // Update campaign
+              const updateResult = await mongoose.default.connection.db.collection('funditems').updateOne(
+                { _id: campaign._id },
+                {
                   $inc: {
                     currentAmount: amount,
                     contributionsCount: 1,
-                    uniqueContributorsCount: 1
+                    uniqueContributorsCount: isNewContributor ? 1 : 0
+                  },
+                  $set: {
+                    status: (campaign.currentAmount + amount >= campaign.fundingGoal) ? 'funded' : campaign.status
                   }
-                }),
-              });
+                }
+              );
 
-              if (campaignResponse.ok) {
-                console.log('Successfully updated campaign directly');
-              } else {
-                console.error('Failed to update campaign directly');
-              }
+              console.log('Campaign update result:', updateResult);
+
+              // Update the campaign state for the UI
+              setCampaign({
+                ...campaign,
+                currentAmount: campaign.currentAmount + amount,
+                contributionsCount: campaign.contributionsCount + 1,
+                uniqueContributorsCount: campaign.uniqueContributorsCount + (isNewContributor ? 1 : 0)
+              });
             }
           }
         } catch (error) {
