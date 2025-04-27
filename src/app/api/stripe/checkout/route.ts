@@ -92,7 +92,7 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/foundfund/payment/success?session_id={CHECKOUT_SESSION_ID}&campaign_id=${campaignId}&amount=${amount}&user_id=${userId}&message=${encodeURIComponent(message || '')}&anonymous=${anonymous || false}`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/foundfund/payment/success?session_id={CHECKOUT_SESSION_ID}&campaign_id=${campaignId}&amount=${amount}&user_id=${userId}&message=${encodeURIComponent(message || '')}&anonymous=${anonymous || false}&campaign_name=${encodeURIComponent(campaign.name)}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/foundfund/projects/${campaignId}?payment_canceled=true`,
       metadata: {
         campaignId,

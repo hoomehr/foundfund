@@ -3,7 +3,10 @@ import {
   FundItem,
   Contribution,
   Category,
-  FundingStatus
+  FundingStatus,
+  Transaction,
+  TransactionStatus,
+  PaymentProvider
 } from '@/types';
 
 // Base API URL
@@ -273,6 +276,135 @@ export async function createStripeCheckoutSession(data: {
   }
 }
 
+// Transaction API
+export async function getTransactions(params?: {
+  campaignId?: string;
+  contributorId?: string;
+  status?: TransactionStatus;
+  provider?: PaymentProvider;
+  providerTransactionId?: string;
+}): Promise<Transaction[]> {
+  let url = `${API_BASE}/transactions`;
+
+  if (params) {
+    const queryParams = new URLSearchParams();
+
+    if (params.campaignId) {
+      queryParams.append('campaignId', params.campaignId);
+    }
+
+    if (params.contributorId) {
+      queryParams.append('contributorId', params.contributorId);
+    }
+
+    if (params.status) {
+      queryParams.append('status', params.status);
+    }
+
+    if (params.provider) {
+      queryParams.append('provider', params.provider);
+    }
+
+    if (params.providerTransactionId) {
+      queryParams.append('providerTransactionId', params.providerTransactionId);
+    }
+
+    if (queryParams.toString()) {
+      url += `?${queryParams.toString()}`;
+    }
+  }
+
+  try {
+    console.log(`Fetching transactions with params:`, params);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error fetching transactions:`, errorData);
+      throw new Error('Failed to fetch transactions');
+    }
+
+    const data = await response.json();
+    console.log(`Successfully fetched ${data.length} transactions`);
+    return data;
+  } catch (error) {
+    console.error(`Error in getTransactions:`, error);
+    throw error;
+  }
+}
+
+export async function getTransactionById(id: string): Promise<Transaction> {
+  try {
+    console.log(`Fetching transaction with id ${id}`);
+    const response = await fetch(`${API_BASE}/transactions/${id}`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error fetching transaction ${id}:`, errorData);
+      throw new Error(`Failed to fetch transaction with id ${id}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully fetched transaction ${id}`);
+    return data;
+  } catch (error) {
+    console.error(`Error in getTransactionById(${id}):`, error);
+    throw error;
+  }
+}
+
+export async function createTransaction(transaction: Partial<Transaction>): Promise<Transaction> {
+  try {
+    console.log(`Creating transaction for campaign ${transaction.campaignId}`);
+    const response = await fetch(`${API_BASE}/transactions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(transaction),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error creating transaction:`, errorData);
+      throw new Error(`Failed to create transaction: ${errorData?.error || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully created transaction`);
+    return data;
+  } catch (error) {
+    console.error(`Error in createTransaction:`, error);
+    throw error;
+  }
+}
+
+export async function updateTransaction(id: string, updates: Partial<Transaction>): Promise<Transaction> {
+  try {
+    console.log(`Updating transaction ${id}`);
+    const response = await fetch(`${API_BASE}/transactions/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`Error updating transaction ${id}:`, errorData);
+      throw new Error(`Failed to update transaction: ${errorData?.error || response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log(`Successfully updated transaction ${id}`);
+    return data;
+  } catch (error) {
+    console.error(`Error in updateTransaction(${id}):`, error);
+    throw error;
+  }
+}
+
 // Helper functions
 export function getCategories(): Category[] {
   return [
@@ -291,4 +423,12 @@ export function getCategories(): Category[] {
 
 export function getFundingStatuses(): FundingStatus[] {
   return ['draft', 'active', 'funded', 'expired', 'canceled'];
+}
+
+export function getTransactionStatuses(): TransactionStatus[] {
+  return ['pending', 'processing', 'completed', 'failed', 'refunded'];
+}
+
+export function getPaymentProviders(): PaymentProvider[] {
+  return ['stripe', 'paypal', 'manual', 'other'];
 }

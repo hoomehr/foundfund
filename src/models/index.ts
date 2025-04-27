@@ -8,7 +8,8 @@ import {
   CampaignFAQ as FAQType,
   UserFollow as FollowType,
   CampaignBookmark as BookmarkType,
-  Notification as NotificationType
+  Notification as NotificationType,
+  Transaction as TransactionType
 } from '@/types';
 
 // User Schema
@@ -133,7 +134,46 @@ const ContributionSchema = new Schema({
 
   // New relation names
   campaignId: String,
-  contributorId: String
+  contributorId: String,
+
+  // Payment information
+  stripeSessionId: String,  // Stripe checkout session ID
+  stripePaymentIntentId: String  // Stripe payment intent ID
+});
+
+// Transaction Schema
+const TransactionSchema = new Schema({
+  id: { type: String }, // Include the id field from our seed data
+  amount: { type: Number, required: true },
+  status: {
+    type: String,
+    enum: ['pending', 'processing', 'completed', 'failed', 'refunded'],
+    default: 'pending',
+    required: true
+  },
+  provider: {
+    type: String,
+    enum: ['stripe', 'paypal', 'manual', 'other'],
+    required: true
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['credit_card', 'debit_card', 'bank_transfer', 'paypal', 'other']
+  },
+  providerTransactionId: { type: String, required: true },
+  providerFee: Number,
+  platformFee: Number,
+  netAmount: Number,
+  metadata: Schema.Types.Mixed,
+  campaignId: { type: String, required: true },
+  contributorId: { type: String, required: true },
+  contributionId: String,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: Date,
+  completedAt: Date,
+  refundedAt: Date,
+  failedAt: Date,
+  errorMessage: String
 });
 
 // User Follow Schema
@@ -192,6 +232,10 @@ export interface NotificationDocument extends Document, Omit<NotificationType, '
   _id: string;
 }
 
+export interface TransactionDocument extends Document, Omit<TransactionType, 'id'> {
+  _id: string;
+}
+
 // Create or get models with explicit collection names
 export const User = models.User || model<UserDocument>('User', UserSchema, 'users');
 export const FundItem = models.FundItem || model<FundItemDocument>('FundItem', FundItemSchema, 'funditems');
@@ -199,6 +243,7 @@ export const Contribution = models.Contribution || model<ContributionDocument>('
 export const UserFollow = models.UserFollow || model<UserFollowDocument>('UserFollow', UserFollowSchema, 'userfollows');
 export const CampaignBookmark = models.CampaignBookmark || model<CampaignBookmarkDocument>('CampaignBookmark', CampaignBookmarkSchema, 'campaignbookmarks');
 export const Notification = models.Notification || model<NotificationDocument>('Notification', NotificationSchema, 'notifications');
+export const Transaction = models.Transaction || model<TransactionDocument>('Transaction', TransactionSchema, 'transactions');
 
 // Connect to MongoDB
 export const connectToDatabase = async () => {

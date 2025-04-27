@@ -6,6 +6,12 @@ export type AttachmentType = 'pitch_deck' | 'cv' | 'business_plan' | 'prototype'
 
 export type ContributionStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 
+export type TransactionStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'refunded';
+
+export type PaymentMethod = 'credit_card' | 'debit_card' | 'bank_transfer' | 'paypal' | 'other';
+
+export type PaymentProvider = 'stripe' | 'paypal' | 'manual' | 'other';
+
 export type NotificationType = 'contribution' | 'campaign_update' | 'goal_reached' | 'campaign_ending' | 'new_follower';
 
 // We'll keep FundItem for backward compatibility but it's essentially a Campaign
@@ -116,6 +122,10 @@ export interface Contribution {
   // New relation names
   campaignId?: string;
   contributorId?: string;
+
+  // Payment information
+  stripeSessionId?: string;  // Stripe checkout session ID
+  stripePaymentIntentId?: string;  // Stripe payment intent ID
 }
 
 export interface UserFollow {
@@ -140,4 +150,26 @@ export interface Notification {
   read: boolean;
   relatedId?: string;
   createdAt: string;
+}
+
+export interface Transaction {
+  id: string;
+  amount: number;
+  status: TransactionStatus;
+  provider: PaymentProvider;
+  paymentMethod?: PaymentMethod;
+  providerTransactionId: string;  // e.g., Stripe session ID or PayPal transaction ID
+  providerFee?: number;
+  platformFee?: number;
+  netAmount?: number;
+  metadata?: Record<string, any>;
+  campaignId: string;
+  contributorId: string;
+  contributionId?: string;
+  createdAt: string;
+  updatedAt?: string;
+  completedAt?: string;
+  refundedAt?: string;
+  failedAt?: string;
+  errorMessage?: string;
 }
