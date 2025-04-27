@@ -81,107 +81,148 @@ export default function PaymentSuccessPage() {
           return;
         }
 
-        console.log('Payment success page - Processing session:', sessionId);
+        console.log('=== PAYMENT SUCCESS PAGE - PROCESSING SESSION ===');
+        console.log('Timestamp:', new Date().toISOString());
+        console.log('Session ID:', sessionId);
+        console.log('Campaign ID:', campaignId);
+        console.log('User ID:', userId);
+        console.log('Amount:', amount);
+        console.log('Message:', message || 'N/A');
+        console.log('Anonymous:', anonymous === 'true' ? 'Yes' : 'No');
 
-        // ULTRA SIMPLE APPROACH - JUST DO IT DIRECTLY
+        // USING THE PROCESS-PAYMENT API ENDPOINT
         try {
-          console.log('ULTRA SIMPLE APPROACH - JUST DO IT DIRECTLY');
+          console.log('\n=== CALLING PROCESS-PAYMENT API ENDPOINT ===');
 
-          // Connect to MongoDB directly
-          const { connectToDatabase } = await import('@/models');
-          const mongoose = await import('mongoose');
-          const { v4: uuidv4 } = await import('uuid');
-
-          await connectToDatabase();
-          console.log('Connected to database');
-
-          // 1. Check if contribution already exists
-          console.log(`Checking for existing contribution with session ID: ${sessionId}`);
-          const existingContribution = await mongoose.default.connection.db.collection('contributions').findOne({
-            stripeSessionId: sessionId
-          });
-
-          if (existingContribution) {
-            console.log(`Contribution already exists: ${existingContribution._id}`);
-          } else {
-            // 2. Create contribution
-            console.log('Creating new contribution...');
-            const contributionId = uuidv4();
-            const contributionData = {
-              _id: new mongoose.default.Types.ObjectId(),
-              id: contributionId,
-              fundItemId: campaignId,
-              userId: userId,
-              amount: amount,
+          const response = await fetch('/api/contributions/process-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionId,
+              campaignId,
+              userId,
+              amount: parseFloat(amount.toString()),
               message: message || '',
               anonymous: anonymous === 'true',
-              status: 'completed',
-              stripeSessionId: sessionId,
-              createdAt: new Date()
-            };
+            }),
+          });
 
-            console.log('Contribution data:', contributionData);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Process-payment API succeeded:', data);
 
-            // Insert contribution
-            const result = await mongoose.default.connection.db.collection('contributions').insertOne(contributionData);
-            console.log('Contribution created with ID:', result.insertedId);
-
-            // 3. Update campaign
-            console.log(`Updating campaign ${campaignId} with amount ${amount}`);
-
-            // Find campaign
-            const campaign = await mongoose.default.connection.db.collection('funditems').findOne({
-              $or: [
-                { _id: mongoose.default.Types.ObjectId.isValid(campaignId) ? new mongoose.default.Types.ObjectId(campaignId) : null },
-                { id: campaignId }
-              ]
-            });
-
-            if (!campaign) {
-              console.error(`Campaign not found: ${campaignId}`);
-            } else {
-              console.log(`Found campaign: ${campaign.name}`);
-
-              // Check if this is a new contributor
-              const previousContributions = await mongoose.default.connection.db.collection('contributions').find({
-                $or: [
-                  { fundItemId: campaignId, userId: userId },
-                  { campaignId: campaignId, contributorId: userId }
-                ],
-                _id: { $ne: contributionData._id }
-              }).toArray();
-
-              const isNewContributor = previousContributions.length === 0;
-              console.log(`Is new contributor: ${isNewContributor}`);
-
-              // Update campaign
-              const updateResult = await mongoose.default.connection.db.collection('funditems').updateOne(
-                { _id: campaign._id },
-                {
-                  $inc: {
-                    currentAmount: amount,
-                    contributionsCount: 1,
-                    uniqueContributorsCount: isNewContributor ? 1 : 0
-                  },
-                  $set: {
-                    status: (campaign.currentAmount + amount >= campaign.fundingGoal) ? 'funded' : campaign.status
-                  }
-                }
-              );
-
-              console.log('Campaign update result:', updateResult);
-
-              // Update the campaign state for the UI
-              setCampaign({
-                ...campaign,
-                currentAmount: campaign.currentAmount + amount,
-                contributionsCount: campaign.contributionsCount + 1,
-                uniqueContributorsCount: campaign.uniqueContributorsCount + (isNewContributor ? 1 : 0)
-              });
+            // Update the campaign state for the UI if available
+            if (data.campaign) {
+              setCampaign(data.campaign);
             }
+
+            console.log('\n=== PAYMENT PROCESSING COMPLETED SUCCESSFULLY ===');
+          } else {
+            console.error('❌ Process-payment API failed:', await response.text());
+            throw new Error('Process-payment API failed');
           }
         } catch (error) {
-          console.error('Error creating contribution:', error);
+          console.error('❌ Error processing payment:', error);
+
+          // Try fallback approach - call the direct-payment endpoint
+          console.log('\n=== TRYING FALLBACK APPROACH - DIRECT-PAYMENT API ===');
+
+          try {
+            const response = await fetch('/api/contributions/direct-payment', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                campaignId: campaignId,
+                userId: userId,
+                amount: parseFloat(amount.toString()),
+                message: message || '',
+                anonymous: anonymous === 'true',
+                stripeSessionId: sessionId,
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log('✅ Direct-payment API succeeded:', data);
+
+              // Update the campaign state for the UI if available
+              if (data.campaign) {
+                setCampaign(data.campaign);
+              }
+            } else {
+              console.error('❌ Direct-payment API failed:', await response.text());
+
+              // Final fallback - try the script-direct endpoint
+              console.log('\n=== TRYING FINAL FALLBACK - SCRIPT-DIRECT API ===');
+
+              try {
+                const scriptDirectResponse = await fetch('/api/contributions/script-direct', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    campaignId: campaignId,
+                    userId: userId,
+                    amount: parseFloat(amount.toString()),
+                    message: message || '',
+                    anonymous: anonymous === 'true',
+                    stripeSessionId: sessionId,
+                  }),
+                });
+
+                if (scriptDirectResponse.ok) {
+                  const scriptDirectData = await scriptDirectResponse.json();
+                  console.log('✅ Script-direct API succeeded:', scriptDirectData);
+
+                  // Update the campaign state for the UI if available
+                  if (scriptDirectData.campaign) {
+                    setCampaign(scriptDirectData.campaign);
+                  }
+                } else {
+                  console.error('❌ Script-direct API failed:', await scriptDirectResponse.text());
+
+                  // Last resort - try the contributions endpoint
+                  console.log('\n=== TRYING LAST RESORT - CONTRIBUTIONS API ===');
+
+                  try {
+                    const contributionsResponse = await fetch('/api/contributions', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        campaignId: campaignId,
+                        userId: userId,
+                        amount: parseFloat(amount.toString()),
+                        message: message || '',
+                        anonymous: anonymous === 'true',
+                        stripeSessionId: sessionId,
+                        status: 'completed',
+                      }),
+                    });
+
+                    if (contributionsResponse.ok) {
+                      const contributionsData = await contributionsResponse.json();
+                      console.log('✅ Contributions API succeeded:', contributionsData);
+                    } else {
+                      console.error('❌ Contributions API failed:', await contributionsResponse.text());
+                    }
+                  } catch (contributionsError) {
+                    console.error('❌ Error in contributions API:', contributionsError);
+                  }
+                }
+              } catch (scriptDirectError) {
+                console.error('❌ Error in script-direct API:', scriptDirectError);
+              }
+            }
+          } catch (directPaymentError) {
+            console.error('❌ Error in direct-payment API:', directPaymentError);
+          }
         }
 
         // If we have campaign data, refresh it to show updated stats

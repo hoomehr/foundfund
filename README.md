@@ -212,32 +212,65 @@ If contributions are not being properly recorded after payments:
    - The webhook should point to your application's webhook endpoint (`/api/stripe/webhook`).
    - The webhook should be configured to listen for the `checkout.session.completed` event.
    - Verify that the webhook secret is correctly set in your environment variables.
+   - Use the script at `src/scripts/debug-stripe-webhook.js` to check the webhook configuration.
+     - Run with: `node src/scripts/debug-stripe-webhook.js`
 
 2. **Check MongoDB Connection**:
    - Ensure the MongoDB connection string is correct in your environment variables.
    - Check the MongoDB logs for any connection issues.
    - Verify that the MongoDB user has write permissions to the database.
+   - Use the script at `src/scripts/debug-mongodb-connection.js` to test the MongoDB connection.
+     - Run with: `node src/scripts/debug-mongodb-connection.js`
 
-3. **Check Server Logs**:
+3. **Check Environment Variables**:
+   - Verify that all required environment variables are set correctly.
+   - Use the script at `src/scripts/check-env-variables.js` to check the environment variables.
+     - Run with: `node src/scripts/check-env-variables.js`
+
+4. **Check Server Logs**:
    - Look for any error messages in the server logs related to Stripe or MongoDB.
    - Check for any failed API calls to `/api/contributions/direct` or `/api/contributions`.
+   - Look for logs with `❌` which indicate errors.
 
-4. **Manual Contribution Creation**:
+5. **Test Payment Success Page**:
+   - Use the script at `src/scripts/test-payment-success.js` to test the payment success page.
+     - Run with: `node src/scripts/test-payment-success.js <session_id> <campaign_id> <user_id> <amount>`
+     - Example: `node src/scripts/test-payment-success.js test_session_123 680adc2a49d548cc43032cad user1 50`
+
+6. **Simulate Stripe Webhook**:
+   - Use the script at `src/scripts/simulate-stripe-webhook.js` to simulate a Stripe webhook event.
+     - Run with: `node src/scripts/simulate-stripe-webhook.js <session_id> <campaign_id> <user_id> <amount>`
+     - Example: `node src/scripts/simulate-stripe-webhook.js test_session_123 680adc2a49d548cc43032cad user1 50`
+
+7. **Manual Contribution Creation**:
    - If automatic contribution creation is failing, you can use the following scripts to manually create contributions:
      - `src/scripts/add-contribution.js`: General-purpose script for adding contributions.
        - Run with: `node src/scripts/add-contribution.js`
      - `src/scripts/add-stripe-contribution.js`: Script for adding contributions for specific Stripe sessions.
        - Run with: `node src/scripts/add-stripe-contribution.js <session_id> <campaign_id> <user_id> <amount>`
        - Example: `node src/scripts/add-stripe-contribution.js cs_test_a1xEy6qhmI0xHkpQ9ikLf8py3D1nuhqiOLaFWwZuyt7v0dO5P8jrpKNVab 680adc2a49d548cc43032cad user1 50`
+     - `src/scripts/add-contribution-for-session.js`: Script for adding contributions for specific Stripe sessions (more reliable).
+       - Run with: `node src/scripts/add-contribution-for-session.js <session_id> <campaign_id> <user_id> <amount>`
+       - Example: `node src/scripts/add-contribution-for-session.js cs_test_a1fjo3L3AUN64NGMFs4S9bcCPJSdKeBQlKYYc1uPqZlQy6BygWpj9WfL3R 680adc2a49d548cc43032cad user1 109`
 
-5. **Verify Stripe Events**:
+8. **Check Contributions**:
+   - Use the script at `src/scripts/check-contributions.js` to check the current contributions for a campaign.
+   - Run with: `node src/scripts/check-contributions.js`
+
+9. **Verify Stripe Events**:
    - Check the Stripe Dashboard for any failed webhook events.
    - Verify that the webhook events are being sent to your application.
    - Use the Stripe CLI to test webhook events locally.
+   - Run: `stripe listen --forward-to http://localhost:3001/api/stripe/webhook`
 
-6. **Check Contributions**:
-   - Use the script at `src/scripts/check-contributions.js` to check the current contributions for a campaign.
-   - Run with: `node src/scripts/check-contributions.js`
+10. **Common Issues and Solutions**:
+    - **Webhook Not Receiving Events**: Make sure the webhook URL is publicly accessible. Use a service like ngrok to expose your local server to the internet.
+    - **MongoDB Connection Issues**: Check that your MongoDB URI is correct and that the database server is running.
+    - **Missing Environment Variables**: Ensure all required environment variables are set in your `.env.local` file.
+    - **Stripe API Version Mismatch**: Make sure the Stripe API version in your code matches the one in your Stripe Dashboard.
+    - **CORS Issues**: If you're testing locally, make sure your CORS settings allow requests from your local domain.
+    - **Stripe Environment Variables Missing**: If Stripe environment variables are missing, the webhook will not work. In this case, use the `src/scripts/add-contribution-for-session.js` script to manually add contributions for specific Stripe sessions.
+    - **Webhook Not Triggered**: If the webhook is not being triggered, check the Stripe Dashboard for any failed webhook events. You can also use the `src/scripts/add-contribution-for-session.js` script to manually add contributions for specific Stripe sessions.
 
 ## Design System
 
