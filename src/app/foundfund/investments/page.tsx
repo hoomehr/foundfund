@@ -138,26 +138,53 @@ export default function InvestmentsPage() {
 
         // Try to fetch from API first
         try {
+          console.log('Calling getContributionsByContributor with userId:', user.id);
           const userContributions = await getContributionsByContributor(user.id);
+          console.log('Received contributions:', userContributions?.length || 0);
 
           // If we have contributions, fetch the campaign details for each
           if (userContributions && userContributions.length > 0) {
+            console.log('Processing contributions and fetching campaign details');
+
             const contributionsWithCampaigns = await Promise.all(
               userContributions.map(async (contribution) => {
                 try {
-                  const campaign = await getCampaignById(contribution.campaignId || contribution.fundItemId);
+                  const campaignId = contribution.campaignId || contribution.fundItemId;
+                  console.log(`Fetching campaign details for contribution ${contribution.id}, campaign ID: ${campaignId}`);
+
+                  const campaign = await getCampaignById(campaignId);
+                  console.log(`Successfully fetched campaign: ${campaign?.name || 'Unknown'}`);
+
                   return {
                     ...contribution,
                     campaign
                   };
                 } catch (error) {
                   console.error(`Error fetching campaign for contribution ${contribution.id}:`, error);
-                  // Return the contribution without campaign details
-                  return contribution;
+
+                  // Create a placeholder campaign object if we couldn't fetch the real one
+                  const placeholderCampaign = {
+                    id: contribution.campaignId || contribution.fundItemId,
+                    name: 'Campaign Details Unavailable',
+                    description: 'The details for this campaign could not be loaded.',
+                    fundingGoal: contribution.amount * 2, // Placeholder
+                    currentAmount: contribution.amount,
+                    status: 'active',
+                    createdAt: contribution.createdAt,
+                    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    imageUrl: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop',
+                    creatorId: '',
+                  };
+
+                  return {
+                    ...contribution,
+                    campaign: placeholderCampaign
+                  };
                 }
               })
             );
 
+            console.log('Setting contributions with campaigns:', contributionsWithCampaigns.length);
             setContributions(contributionsWithCampaigns);
           } else {
             // Fallback to mock data for demo purposes
@@ -165,9 +192,68 @@ export default function InvestmentsPage() {
             setContributions(mockContributions);
           }
         } catch (apiError) {
-          console.error('Error fetching from API, using mock data:', apiError);
-          // Fallback to mock data
-          setContributions(mockContributions);
+          console.error('Error fetching from API:', apiError);
+
+          // Try direct API call as fallback
+          try {
+            console.log('Trying direct API call to /api/contributions');
+            const response = await fetch(`/api/contributions?userId=${user.id}`);
+
+            if (response.ok) {
+              const directContributions = await response.json();
+              console.log('Direct API call successful, received contributions:', directContributions?.length || 0);
+
+              if (directContributions && directContributions.length > 0) {
+                const contributionsWithCampaigns = await Promise.all(
+                  directContributions.map(async (contribution) => {
+                    try {
+                      const campaignId = contribution.campaignId || contribution.fundItemId;
+                      const campaign = await getCampaignById(campaignId);
+                      return {
+                        ...contribution,
+                        campaign
+                      };
+                    } catch (error) {
+                      console.error(`Error fetching campaign for contribution ${contribution.id}:`, error);
+
+                      // Create a placeholder campaign object
+                      const placeholderCampaign = {
+                        id: contribution.campaignId || contribution.fundItemId,
+                        name: 'Campaign Details Unavailable',
+                        description: 'The details for this campaign could not be loaded.',
+                        fundingGoal: contribution.amount * 2, // Placeholder
+                        currentAmount: contribution.amount,
+                        status: 'active',
+                        createdAt: contribution.createdAt,
+                        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        imageUrl: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop',
+                        creatorId: '',
+                      };
+
+                      return {
+                        ...contribution,
+                        campaign: placeholderCampaign
+                      };
+                    }
+                  })
+                );
+
+                setContributions(contributionsWithCampaigns);
+              } else {
+                // Fallback to mock data
+                console.log('No contributions found in direct API call, using mock data');
+                setContributions(mockContributions);
+              }
+            } else {
+              // Fallback to mock data
+              console.log('Direct API call failed, using mock data');
+              setContributions(mockContributions);
+            }
+          } catch (directApiError) {
+            console.error('Error with direct API call, using mock data:', directApiError);
+            // Fallback to mock data
+            setContributions(mockContributions);
+          }
         }
 
         setError(null);

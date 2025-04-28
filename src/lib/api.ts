@@ -215,7 +215,33 @@ export async function getContributionsByUser(userId: string): Promise<Contributi
 }
 
 export async function getContributionsByContributor(contributorId: string): Promise<Contribution[]> {
-  return getContributions({ contributorId });
+  try {
+    console.log(`Getting contributions for contributor ID: ${contributorId}`);
+
+    // First try with contributorId
+    const contributionsWithContributorId = await getContributions({ contributorId });
+    console.log(`Found ${contributionsWithContributorId.length} contributions with contributorId`);
+
+    // Then try with userId
+    const contributionsWithUserId = await getContributions({ userId: contributorId });
+    console.log(`Found ${contributionsWithUserId.length} contributions with userId`);
+
+    // Combine results, removing duplicates by ID
+    const allContributions = [...contributionsWithContributorId];
+
+    // Add contributions from userId search that aren't already in the results
+    for (const contribution of contributionsWithUserId) {
+      if (!allContributions.some(c => c.id === contribution.id)) {
+        allContributions.push(contribution);
+      }
+    }
+
+    console.log(`Total unique contributions found: ${allContributions.length}`);
+    return allContributions;
+  } catch (error) {
+    console.error('Error in getContributionsByContributor:', error);
+    throw error;
+  }
 }
 
 export async function createContribution(contribution: Partial<Contribution>): Promise<Contribution> {

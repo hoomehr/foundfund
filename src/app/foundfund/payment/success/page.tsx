@@ -462,11 +462,11 @@ export default function PaymentSuccessPage() {
     processPayment();
   }, [searchParams]);
 
-  // Redirect to campaign page after 8 seconds
+  // Redirect to investments page after 8 seconds
   useEffect(() => {
     if (showModal && campaignId) {
       const timer = setTimeout(() => {
-        router.push(`/foundfund/projects/${campaignId}`);
+        router.push('/foundfund/investments');
       }, 8000);
 
       return () => clearTimeout(timer);
@@ -505,7 +505,7 @@ export default function PaymentSuccessPage() {
       {showModal && campaign && (
         <ContributionSuccessModal
           isOpen={showModal}
-          onClose={() => router.push(`/foundfund/projects/${campaignId}`)}
+          onClose={() => router.push('/foundfund/investments')}
           amount={amount}
           campaign={campaign}
         />
@@ -566,21 +566,21 @@ export default function PaymentSuccessPage() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href={`/foundfund/projects/${campaignId}`}
+            href="/foundfund/investments"
             className="px-6 py-3 bg-white text-black rounded-2xl shadow-[0_0_15px_rgba(255,255,255,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.7)] transition-shadow text-center font-medium"
           >
-            View Campaign
+            View My Investments
           </Link>
           <Link
-            href="/foundfund/funders"
+            href={`/foundfund/projects/${campaignId}`}
             className="px-6 py-3 bg-black/30 text-white rounded-2xl border border-white/20 hover:bg-black/40 transition-colors text-center font-medium"
           >
-            Discover More Projects
+            View Campaign
           </Link>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">
-          You will be redirected to the campaign page in a few seconds.
+          You will be redirected to your investments page in a few seconds.
         </p>
       </div>
     </div>
