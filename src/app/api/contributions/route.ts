@@ -11,8 +11,9 @@ export async function GET(request: Request) {
     const campaignId = searchParams.get('campaignId') || searchParams.get('fundItemId');
     const userId = searchParams.get('userId');
     const contributorId = searchParams.get('contributorId');
+    const stripeSessionId = searchParams.get('stripeSessionId');
 
-    console.log('GET /api/contributions - Query params:', { campaignId, userId, contributorId });
+    console.log('GET /api/contributions - Query params:', { campaignId, userId, contributorId, stripeSessionId });
 
     await connectToDatabase();
     console.log('GET /api/contributions - Connected to database');
@@ -31,6 +32,11 @@ export async function GET(request: Request) {
 
     if (contributorId) {
       query.contributorId = contributorId;
+    }
+
+    if (stripeSessionId) {
+      console.log(`GET /api/contributions - Searching for contribution with stripeSessionId: ${stripeSessionId}`);
+      query.stripeSessionId = stripeSessionId;
     }
 
     console.log('GET /api/contributions - Executing query:', JSON.stringify(query));

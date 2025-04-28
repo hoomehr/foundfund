@@ -105,17 +105,33 @@ export default function PaymentSuccessPage() {
         }
 
         // Check if contribution already exists (to prevent duplicates on page refresh)
-        const existingContributions = await fetch(`/api/contributions?stripeSessionId=${sessionId}`);
-        const existingData = await existingContributions.json();
+        console.log(`Checking if contribution already exists for session ID: ${sessionId}`);
+        try {
+          const existingContributionsResponse = await fetch(`/api/contributions?stripeSessionId=${sessionId}`);
+          console.log('Existing contributions response status:', existingContributionsResponse.status);
 
-        if (existingData && existingData.length > 0) {
-          console.log('Contribution already processed');
-          // Set data for modal
-          setAmount(amount);
-          setCampaignId(campaignId);
-          setShowModal(true);
-          setLoading(false);
-          return;
+          if (!existingContributionsResponse.ok) {
+            console.error('Error checking existing contributions:', existingContributionsResponse.statusText);
+            throw new Error(`Failed to check existing contributions: ${existingContributionsResponse.status} ${existingContributionsResponse.statusText}`);
+          }
+
+          const existingData = await existingContributionsResponse.json();
+          console.log('Existing contributions data:', JSON.stringify(existingData, null, 2));
+
+          if (existingData && Array.isArray(existingData) && existingData.length > 0) {
+            console.log('✅ Contribution already processed:', existingData[0].id);
+            // Set data for modal
+            setAmount(amount);
+            setCampaignId(campaignId);
+            setShowModal(true);
+            setLoading(false);
+            return;
+          }
+
+          console.log('No existing contribution found, proceeding to create one');
+        } catch (error) {
+          console.error('Error checking existing contributions:', error);
+          // Continue with the process even if checking existing contributions fails
         }
 
         console.log('=== PAYMENT SUCCESS PAGE - PROCESSING SESSION ===');
