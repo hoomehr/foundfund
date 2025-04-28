@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     try {
       campaign = await FundItem.findById(campaignId);
     } catch (error) {
-      console.log(`Error finding campaign by _id:`, error.message);
+      // Continue to next lookup method
     }
 
     // If not found by _id, try to find by id field
@@ -60,35 +60,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Debug campaign data
-    console.log('Campaign data:', {
-      id: campaign.id,
-      name: campaign.name,
-      imageUrl: campaign.imageUrl,
-      description: campaign.description?.substring(0, 100) + '...'
-    });
-
     // Always use a known working image URL for Stripe
     // Stripe requires fully qualified URLs that are publicly accessible
     const imageUrl = 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop';
 
-    console.log(`Using image URL for Stripe: ${imageUrl}`);
-
     // Create a Stripe checkout session
-    console.log('Creating Stripe checkout session with the following data:');
-    console.log('- Campaign ID:', campaignId);
-    console.log('- Campaign Name:', campaign.name);
-    console.log('- User ID:', userId);
-    console.log('- Amount:', amount);
-    console.log('- Message:', message || 'N/A');
-    console.log('- Anonymous:', anonymous ? 'Yes' : 'No');
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3001';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3002';
     const successUrl = `${baseUrl}/foundfund/payment/success?session_id={CHECKOUT_SESSION_ID}&campaign_id=${campaignId}&amount=${amount}&user_id=${userId}&message=${encodeURIComponent(message || '')}&anonymous=${anonymous || false}&campaign_name=${encodeURIComponent(campaign.name)}`;
     const cancelUrl = `${baseUrl}/foundfund/projects/${campaignId}?payment_canceled=true`;
-
-    console.log('Success URL:', successUrl.replace('{CHECKOUT_SESSION_ID}', 'CHECKOUT_SESSION_ID_PLACEHOLDER'));
-    console.log('Cancel URL:', cancelUrl);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -120,13 +99,10 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log('✅ Stripe checkout session created successfully');
-    console.log('Session ID:', session.id);
-    console.log('Session URL:', session.url);
+
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

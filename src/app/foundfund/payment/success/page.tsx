@@ -23,13 +23,7 @@ export default function PaymentSuccessPage() {
       try {
         setLoading(true);
 
-        console.log('\n\n=== PAYMENT SUCCESS PAGE - STARTING PAYMENT PROCESSING ===');
-        console.log('Timestamp:', new Date().toISOString());
-        console.log('URL:', window.location.href);
-
         // Get parameters from URL
-        console.log('Raw search params:', Object.fromEntries([...searchParams.entries()]));
-
         const sessionId = searchParams.get('session_id');
         const campaignId = searchParams.get('campaign_id');
         const amountStr = searchParams.get('amount');
@@ -38,17 +32,6 @@ export default function PaymentSuccessPage() {
         const message = searchParams.get('message');
         const anonymous = searchParams.get('anonymous') === 'true';
         const campaignName = searchParams.get('campaign_name');
-
-        // Log all parameters
-        console.log('Parsed parameters:');
-        console.log(`- Session ID: ${sessionId || 'MISSING'}`);
-        console.log(`- Campaign ID: ${campaignId || 'MISSING'}`);
-        console.log(`- Amount (raw): ${amountStr || 'MISSING'}`);
-        console.log(`- Amount (parsed): ${amount}`);
-        console.log(`- User ID: ${userId || 'MISSING'}`);
-        console.log(`- Message: ${message || 'N/A'}`);
-        console.log(`- Anonymous: ${anonymous ? 'Yes' : 'No'}`);
-        console.log(`- Campaign Name: ${campaignName || 'N/A'}`);
 
         // Validate parameters
         const missingParams = [];
@@ -74,8 +57,6 @@ export default function PaymentSuccessPage() {
           return;
         }
 
-        console.log('✅ All required parameters present and valid');
-
         // If we have a campaign name from the URL but no campaign data yet,
         // create a temporary campaign object with the name
         if (campaignName && !campaign) {
@@ -95,31 +76,23 @@ export default function PaymentSuccessPage() {
 
         // Fetch campaign details
         try {
-          console.log(`Fetching campaign details for ID: ${campaignId}`);
           const campaignData = await getCampaignById(campaignId);
           setCampaign(campaignData);
-          console.log('Campaign details fetched successfully:', campaignData.name);
         } catch (error) {
-          console.error('Error fetching campaign details:', error);
           // Continue with the process even if campaign details can't be fetched
         }
 
         // Check if contribution already exists (to prevent duplicates on page refresh)
-        console.log(`Checking if contribution already exists for session ID: ${sessionId}`);
         try {
           const existingContributionsResponse = await fetch(`/api/contributions?stripeSessionId=${sessionId}`);
-          console.log('Existing contributions response status:', existingContributionsResponse.status);
 
           if (!existingContributionsResponse.ok) {
-            console.error('Error checking existing contributions:', existingContributionsResponse.statusText);
-            throw new Error(`Failed to check existing contributions: ${existingContributionsResponse.status} ${existingContributionsResponse.statusText}`);
+            throw new Error(`Failed to check existing contributions`);
           }
 
           const existingData = await existingContributionsResponse.json();
-          console.log('Existing contributions data:', JSON.stringify(existingData, null, 2));
 
           if (existingData && Array.isArray(existingData) && existingData.length > 0) {
-            console.log('✅ Contribution already processed:', existingData[0].id);
             // Set data for modal
             setAmount(amount);
             setCampaignId(campaignId);
@@ -127,28 +100,12 @@ export default function PaymentSuccessPage() {
             setLoading(false);
             return;
           }
-
-          console.log('No existing contribution found, proceeding to create one');
         } catch (error) {
-          console.error('Error checking existing contributions:', error);
           // Continue with the process even if checking existing contributions fails
         }
 
-        console.log('=== PAYMENT SUCCESS PAGE - PROCESSING SESSION ===');
-        console.log('Timestamp:', new Date().toISOString());
-        console.log('Session ID:', sessionId);
-        console.log('Campaign ID:', campaignId);
-        console.log('User ID:', userId);
-        console.log('Amount:', amount);
-        console.log('Message:', message || 'N/A');
-        console.log('Anonymous:', anonymous === 'true' ? 'Yes' : 'No');
-
-        // USING THE DIRECT-CREATE API ENDPOINT
+        // Create contribution using direct-create API
         try {
-          console.log('\n=== CALLING DIRECT-CREATE API ENDPOINT ===');
-          console.log('Request URL:', '/api/contributions/direct-create');
-          console.log('Request method: POST');
-
           const requestBody = {
             sessionId,
             campaignId,
@@ -158,11 +115,6 @@ export default function PaymentSuccessPage() {
             anonymous: anonymous,
           };
 
-          console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-          const startTime = Date.now();
-          console.log('Request start time:', new Date(startTime).toISOString());
-
           const response = await fetch('/api/contributions/direct-create', {
             method: 'POST',
             headers: {
@@ -171,60 +123,19 @@ export default function PaymentSuccessPage() {
             body: JSON.stringify(requestBody),
           });
 
-          const endTime = Date.now();
-          console.log('Request end time:', new Date(endTime).toISOString());
-          console.log('Request duration:', endTime - startTime, 'ms');
-
-          console.log('Response status:', response.status);
-          console.log('Response status text:', response.statusText);
-
           if (response.ok) {
-            let data;
-            try {
-              data = await response.json();
-              console.log('Response data:', JSON.stringify(data, null, 2));
-            } catch (parseError) {
-              console.error('❌ Error parsing response JSON:', parseError);
-              throw new Error('Failed to parse API response');
-            }
-
-            console.log('✅ Direct-create API succeeded');
+            const data = await response.json();
 
             // Update the campaign state for the UI if available
             if (data.campaign) {
-              console.log('Updating campaign state with:', data.campaign.name);
               setCampaign(data.campaign);
             }
-
-            console.log('\n=== PAYMENT PROCESSING COMPLETED SUCCESSFULLY ===');
           } else {
-            let errorText;
-            try {
-              errorText = await response.text();
-              console.error('❌ Direct-create API failed:', errorText);
-            } catch (textError) {
-              console.error('❌ Error reading response text:', textError);
-              errorText = 'Could not read error response';
-            }
-
-            throw new Error(`Direct-create API failed: ${response.status} ${response.statusText} - ${errorText}`);
+            throw new Error(`Failed to create contribution`);
           }
         } catch (error) {
-          console.error('❌ Error processing payment:', error);
-
-          if (error instanceof Error) {
-            console.error('Error name:', error.name);
-            console.error('Error message:', error.message);
-            console.error('Error stack:', error.stack);
-          }
-
           // Try fallback approach - call the process-payment endpoint
-          console.log('\n=== TRYING FALLBACK APPROACH - PROCESS-PAYMENT API ===');
-
           try {
-            console.log('Request URL:', '/api/contributions/process-payment');
-            console.log('Request method: POST');
-
             const requestBody = {
               sessionId,
               campaignId,
@@ -234,11 +145,6 @@ export default function PaymentSuccessPage() {
               anonymous: anonymous,
             };
 
-            console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-            const startTime = Date.now();
-            console.log('Request start time:', new Date(startTime).toISOString());
-
             const response = await fetch('/api/contributions/process-payment', {
               method: 'POST',
               headers: {
@@ -247,191 +153,38 @@ export default function PaymentSuccessPage() {
               body: JSON.stringify(requestBody),
             });
 
-            const endTime = Date.now();
-            console.log('Request end time:', new Date(endTime).toISOString());
-            console.log('Request duration:', endTime - startTime, 'ms');
-
-            console.log('Response status:', response.status);
-            console.log('Response status text:', response.statusText);
-
             if (response.ok) {
-              let data;
-              try {
-                data = await response.json();
-                console.log('Response data:', JSON.stringify(data, null, 2));
-              } catch (parseError) {
-                console.error('❌ Error parsing response JSON:', parseError);
-                throw new Error('Failed to parse API response');
-              }
-
-              console.log('✅ Process-payment API succeeded');
+              const data = await response.json();
 
               // Update the campaign state for the UI if available
               if (data.campaign) {
-                console.log('Updating campaign state with:', data.campaign.name);
                 setCampaign(data.campaign);
               }
             } else {
-              let errorText;
-              try {
-                errorText = await response.text();
-                console.error('❌ Process-payment API failed:', errorText);
-              } catch (textError) {
-                console.error('❌ Error reading response text:', textError);
-                errorText = 'Could not read error response';
-              }
-
-              // Final fallback - try the direct-payment endpoint
-              console.log('\n=== TRYING FINAL FALLBACK - DIRECT-PAYMENT API ===');
-
-              try {
-                console.log('Request URL:', '/api/contributions/direct-payment');
-                console.log('Request method: POST');
-
-                const requestBody = {
+              // Final fallback - try the direct API
+              const directResponse = await fetch('/api/contributions', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
                   campaignId: campaignId,
                   userId: userId,
                   amount: amount,
                   message: message || '',
                   anonymous: anonymous,
                   stripeSessionId: sessionId,
-                };
+                  status: 'completed',
+                }),
+              });
 
-                console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-                const startTime = Date.now();
-                console.log('Request start time:', new Date(startTime).toISOString());
-
-                const directPaymentResponse = await fetch('/api/contributions/direct-payment', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(requestBody),
-                });
-
-                const endTime = Date.now();
-                console.log('Request end time:', new Date(endTime).toISOString());
-                console.log('Request duration:', endTime - startTime, 'ms');
-
-                console.log('Response status:', directPaymentResponse.status);
-                console.log('Response status text:', directPaymentResponse.statusText);
-
-                if (directPaymentResponse.ok) {
-                  let directPaymentData;
-                  try {
-                    directPaymentData = await directPaymentResponse.json();
-                    console.log('Response data:', JSON.stringify(directPaymentData, null, 2));
-                  } catch (parseError) {
-                    console.error('❌ Error parsing response JSON:', parseError);
-                    throw new Error('Failed to parse API response');
-                  }
-
-                  console.log('✅ Direct-payment API succeeded');
-
-                  // Update the campaign state for the UI if available
-                  if (directPaymentData.campaign) {
-                    console.log('Updating campaign state with:', directPaymentData.campaign.name);
-                    setCampaign(directPaymentData.campaign);
-                  }
-                } else {
-                  let directPaymentErrorText;
-                  try {
-                    directPaymentErrorText = await directPaymentResponse.text();
-                    console.error('❌ Direct-payment API failed:', directPaymentErrorText);
-                  } catch (textError) {
-                    console.error('❌ Error reading response text:', textError);
-                    directPaymentErrorText = 'Could not read error response';
-                  }
-
-                  // Last resort - try the contributions endpoint
-                  console.log('\n=== TRYING LAST RESORT - CONTRIBUTIONS API ===');
-
-                  try {
-                    console.log('Request URL:', '/api/contributions');
-                    console.log('Request method: POST');
-
-                    const requestBody = {
-                      campaignId: campaignId,
-                      userId: userId,
-                      amount: amount,
-                      message: message || '',
-                      anonymous: anonymous,
-                      stripeSessionId: sessionId,
-                      status: 'completed',
-                    };
-
-                    console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
-                    const startTime = Date.now();
-                    console.log('Request start time:', new Date(startTime).toISOString());
-
-                    const contributionsResponse = await fetch('/api/contributions', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify(requestBody),
-                    });
-
-                    const endTime = Date.now();
-                    console.log('Request end time:', new Date(endTime).toISOString());
-                    console.log('Request duration:', endTime - startTime, 'ms');
-
-                    console.log('Response status:', contributionsResponse.status);
-                    console.log('Response status text:', contributionsResponse.statusText);
-
-                    if (contributionsResponse.ok) {
-                      let contributionsData;
-                      try {
-                        contributionsData = await contributionsResponse.json();
-                        console.log('Response data:', JSON.stringify(contributionsData, null, 2));
-                      } catch (parseError) {
-                        console.error('❌ Error parsing response JSON:', parseError);
-                        throw new Error('Failed to parse API response');
-                      }
-
-                      console.log('✅ Contributions API succeeded');
-                    } else {
-                      let contribErrorText;
-                      try {
-                        contribErrorText = await contributionsResponse.text();
-                        console.error('❌ Contributions API failed:', contribErrorText);
-                      } catch (textError) {
-                        console.error('❌ Error reading response text:', textError);
-                        contribErrorText = 'Could not read error response';
-                      }
-
-                      console.error('❌ All API fallbacks failed. Payment may not have been recorded.');
-                    }
-                  } catch (contributionsError) {
-                    console.error('❌ Error in contributions API:', contributionsError);
-
-                    if (contributionsError instanceof Error) {
-                      console.error('Error name:', contributionsError.name);
-                      console.error('Error message:', contributionsError.message);
-                      console.error('Error stack:', contributionsError.stack);
-                    }
-                  }
-                }
-              } catch (directPaymentError) {
-                console.error('❌ Error in direct-payment API:', directPaymentError);
-
-                if (directPaymentError instanceof Error) {
-                  console.error('Error name:', directPaymentError.name);
-                  console.error('Error message:', directPaymentError.message);
-                  console.error('Error stack:', directPaymentError.stack);
-                }
+              if (directResponse.ok) {
+                const directData = await directResponse.json();
+                // No need to update UI here as we'll show the success modal anyway
               }
             }
-          } catch (processPaymentError) {
-            console.error('❌ Error in process-payment API:', processPaymentError);
-
-            if (processPaymentError instanceof Error) {
-              console.error('Error name:', processPaymentError.name);
-              console.error('Error message:', processPaymentError.message);
-              console.error('Error stack:', processPaymentError.stack);
-            }
+          } catch (fallbackError) {
+            // We've tried our best, continue to show success modal anyway
           }
         }
 
@@ -441,9 +194,8 @@ export default function PaymentSuccessPage() {
             // Refresh campaign data to show updated stats
             const updatedCampaign = await getCampaignById(campaignId);
             setCampaign(updatedCampaign);
-            console.log('Campaign data refreshed with updated stats');
           } catch (error) {
-            console.error('Error refreshing campaign data:', error);
+            // Continue with existing campaign data
           }
         }
 
@@ -452,7 +204,6 @@ export default function PaymentSuccessPage() {
         setCampaignId(campaignId);
         setShowModal(true);
       } catch (err) {
-        console.error('Error processing payment:', err);
         setError('Failed to process payment. Please contact support.');
       } finally {
         setLoading(false);
@@ -571,12 +322,21 @@ export default function PaymentSuccessPage() {
           >
             View My Investments
           </Link>
-          <Link
-            href={`/foundfund/projects/${campaignId}`}
-            className="px-6 py-3 bg-black/30 text-white rounded-2xl border border-white/20 hover:bg-black/40 transition-colors text-center font-medium"
-          >
-            View Campaign
-          </Link>
+          {campaignId ? (
+            <Link
+              href={`/foundfund/projects/${campaignId}`}
+              className="px-6 py-3 bg-black/30 text-white rounded-2xl border border-white/20 hover:bg-black/40 transition-colors text-center font-medium"
+            >
+              View Campaign
+            </Link>
+          ) : (
+            <Link
+              href="/foundfund/funders"
+              className="px-6 py-3 bg-black/30 text-white rounded-2xl border border-white/20 hover:bg-black/40 transition-colors text-center font-medium"
+            >
+              Discover Projects
+            </Link>
+          )}
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">

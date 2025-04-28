@@ -111,13 +111,19 @@ export default function InvestmentsPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState<boolean>(false);
   const [isBackersModalOpen, setIsBackersModalOpen] = useState<boolean>(false);
   const [selectedCampaign, setSelectedCampaign] = useState<any | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Sort contributions from newest to oldest (descending order)
+  const sortedContributions = [...contributions].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   // Analytics data
   const totalInvested = contributions.reduce((sum, contrib) => sum + contrib.amount, 0);
   const totalProjects = new Set(contributions.map(contrib => contrib.campaignId)).size;
   const avgContribution = totalInvested / (contributions.length || 1);
   const successfulProjects = contributions.filter(contrib =>
-    contrib.campaign.status === 'funded'
+    contrib.campaign?.status === 'funded'
   ).length;
 
   // Redirect to login if not authenticated
@@ -360,7 +366,31 @@ export default function InvestmentsPage() {
       </div>
 
       {/* Contributions List */}
-      <h2 className="text-2xl font-bold mb-4">Your Contributions</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Your Contributions</h2>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`px-3 py-1.5 rounded-md ${viewMode === 'grid'
+              ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.5)]'
+              : 'bg-black/30 text-white border border-white/20'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`px-3 py-1.5 rounded-md ${viewMode === 'list'
+              ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.5)]'
+              : 'bg-black/30 text-white border border-white/20'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-500 px-4 py-3 rounded-lg mb-6">
@@ -368,7 +398,7 @@ export default function InvestmentsPage() {
         </div>
       )}
 
-      {contributions.length === 0 ? (
+      {sortedContributions.length === 0 ? (
         <div className="text-center py-12 bg-card border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
           <p className="text-xl text-muted-foreground mb-4">You haven't made any contributions yet.</p>
           <Link
@@ -378,9 +408,9 @@ export default function InvestmentsPage() {
             Discover Projects
           </Link>
         </div>
-      ) : (
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {contributions.map((contribution) => (
+          {sortedContributions.map((contribution) => (
             <div
               key={contribution.id}
               className="bg-card border rounded-xl p-6 shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-shadow cursor-pointer"
@@ -460,6 +490,73 @@ export default function InvestmentsPage() {
             </div>
           ))}
         </div>
+      ) : (
+        <div className="bg-card border rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)]" style={{ borderColor: 'var(--border)' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b" style={{ borderColor: 'var(--border)' }}>
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Project</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedContributions.map((contribution, index) => (
+                  <tr
+                    key={contribution.id}
+                    className={`hover:bg-black/20 cursor-pointer ${index !== sortedContributions.length - 1 ? 'border-b' : ''}`}
+                    style={{ borderColor: 'var(--border)' }}
+                    onClick={() => openDetailsModal(contribution)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 flex-shrink-0 mr-3">
+                          <div className="relative h-10 w-10 rounded overflow-hidden">
+                            <Image
+                              src={contribution.campaign?.imageUrl || 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2071&auto=format&fit=crop'}
+                              alt={contribution.campaign?.name || 'Campaign'}
+                              fill
+                              style={{ objectFit: 'cover' }}
+                            />
+                          </div>
+                        </div>
+                        <div className="ml-2">
+                          <div className="text-sm font-medium">{contribution.campaign?.name || 'Unknown Campaign'}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">{contribution.campaign?.description?.substring(0, 50) || 'No description'}...</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">{formatDate(contribution.createdAt)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-shadow-green">${contribution.amount.toLocaleString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        contribution.campaign?.status === 'funded'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-black/30 text-white border border-white/20'
+                      }`}>
+                        {contribution.campaign?.status === 'funded' ? 'Funded' : getDaysInfo(contribution)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent opening the details modal
+                          openBackersModal(contribution.campaign, [contribution]);
+                        }}
+                        className="text-xs text-black bg-white px-2 py-1 rounded-md border border-white/30 hover:bg-white/90 transition-colors shadow-[0_0_10px_rgba(255,255,255,0.5),_0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_15px_rgba(255,255,255,0.7),_0_0_30px_rgba(255,255,255,0.4)]"
+                      >
+                        View Backers
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* Contribution Details Modal */}
@@ -476,7 +573,7 @@ export default function InvestmentsPage() {
       {selectedCampaign && (
         <BackersModal
           campaign={selectedCampaign}
-          contributions={contributions.filter(c => c.campaignId === selectedCampaign.id || c.fundItemId === selectedCampaign.id)}
+          contributions={sortedContributions.filter(c => c.campaignId === selectedCampaign.id || c.fundItemId === selectedCampaign.id)}
           isOpen={isBackersModalOpen}
           onClose={closeBackersModal}
         />
