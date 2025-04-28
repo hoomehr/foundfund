@@ -77,7 +77,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
           fetchContributions(item.id);
         }
       } catch (err: any) {
-        console.error('Project page: Error fetching fund item:', err);
         setError(err?.message || 'Failed to load project details. Please try again later.');
         setFundItem(null);
       } finally {
@@ -100,7 +99,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       const data = await response.json();
       setContributions(data);
     } catch (error) {
-      console.error('Error fetching contributions:', error);
+      // Silently fail - contributions will be empty
     }
   };
 
@@ -158,18 +157,13 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         anonymous: false
       };
 
-      console.log('Creating Stripe checkout session:', checkoutData);
-
       // Make API call to create a Stripe checkout session
       let responseData;
       try {
         responseData = await createStripeCheckoutSession(checkoutData);
       } catch (error) {
-        console.error('Error creating Stripe checkout session:', error);
-
         // If we're in development mode, use a mock response for testing
         if (process.env.NODE_ENV === 'development') {
-          console.log('Using mock Stripe checkout session for development');
           responseData = {
             sessionId: 'mock_session_id',
             url: `http://localhost:3000/foundfund/payment/success?session_id=mock_session_id&campaign_id=${fundItem.id}&amount=${contributionAmount}&user_id=${user?.id}&message=&anonymous=false`
@@ -179,15 +173,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         }
       }
 
-      console.log('Checkout session created:', responseData);
-
       // Store the contribution amount for the success modal
       setLastContributionAmount(contributionAmount);
 
       // Redirect to Stripe Checkout
       const stripe = await getStripe();
       if (!stripe) {
-        console.error('Failed to initialize Stripe. Check your environment variables.');
         alert('Payment system is not available at the moment. Please try again later or contact support.');
         setIsContributing(false);
         return;
@@ -195,19 +186,16 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
       // If we have a URL, redirect directly
       if (responseData.url) {
-        console.log('Redirecting to Stripe Checkout URL:', responseData.url);
         window.location.href = responseData.url;
         return;
       }
 
       // Otherwise use the session ID
-      console.log('Redirecting to Stripe Checkout with session ID:', responseData.sessionId);
       const { error } = await stripe.redirectToCheckout({
         sessionId: responseData.sessionId,
       });
 
       if (error) {
-        console.error('Stripe redirect error:', error);
         throw new Error(error.message || 'Failed to redirect to payment page');
       }
 
@@ -215,8 +203,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       setIsContributing(false);
       setContributionAmount(10);
     } catch (error: any) {
-      console.error('Error processing contribution:', error);
-
       // Provide a more specific error message if available
       let errorMessage = 'There was an error processing your contribution. Please try again.';
 

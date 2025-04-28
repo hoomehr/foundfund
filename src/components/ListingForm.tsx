@@ -177,8 +177,6 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
       const formData = new FormData();
       formData.append('file', file);
 
-      console.log('Uploading image to server...');
-
       // Upload the file to our API
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -187,12 +185,10 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error uploading image:', errorData);
         throw new Error(errorData.error || 'Failed to upload image');
       }
 
       const data = await response.json();
-      console.log('Image uploaded successfully:', data);
 
       // Update the form data with the image URL
       setFormData(prevFormData => ({
@@ -207,10 +203,7 @@ export default function ListingForm({ initialData, onSubmit, onCancel, isLoading
           imageUrl: ''
         }));
       }
-
-      console.log('Form data updated with image URL:', data.url);
     } catch (error) {
-      console.error('Error in image upload:', error);
       setErrors({
         ...errors,
         imageUrl: error instanceof Error ? error.message : 'Failed to upload image. Please try again.'
