@@ -1,0 +1,11 @@
+# Terraform Resources Found
+
+## File: ./terraform/main.tf
+- Failed to extract resources
+
+## File: ./terraform/outputs.tf
+- Failed to extract resources
+
+## File: ./terraform/variables.tf
+- Failed to extract resources
+
