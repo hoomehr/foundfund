@@ -1,0 +1,1 @@
+# No outputs defined - resources are not available or are already defined in main.tf
