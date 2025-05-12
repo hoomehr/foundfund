@@ -1,0 +1,41 @@
+<html>
+<head>
+    <title>TFSec Security Report</title>
+    <style>
+        body{font-family:Arial,sans-serif;margin:20px}
+        h1{color:#333}
+        table{border-collapse:collapse;width:100%}
+        th,td{text-align:left;padding:8px;border:1px solid #ddd}
+        th{background-color:#f2f2f2}
+        tr:nth-child(even){background-color:#f9f9f9}
+        .critical{background-color:#ffdddd}
+        .high{background-color:#ffffcc}
+        .medium{background-color:#e6f3ff}
+        .low{background-color:#eaffea}
+    </style>
+</head>
+<body>
+    <h1>TFSec Security Scan Results</h1>
+<h2>Found 17 potential security issues</h2>
+<table>
+<tr><th>Rule ID</th><th>Severity</th><th>Description</th><th>Location</th></tr>
+<tr class="medium"><td>AVD-AWS-0020</td><td>MEDIUM</td><td>Neither CloudWatch audit nor profiler log exports are enabled.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:278</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Instance encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:298</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Instance encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:298</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Cluster encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:278</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:234</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:227</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:209</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:194</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:175</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:168</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:161</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:238</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:213</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:179</td></tr>
+<tr class="critical"><td>AVD-AWS-0107</td><td>CRITICAL</td><td>Security group rule allows ingress from public internet.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:172</td></tr>
+<tr class="critical"><td>AVD-AWS-0107</td><td>CRITICAL</td><td>Security group rule allows ingress from public internet.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:165</td></tr>
+<tr class="medium"><td>AVD-AWS-0178</td><td>MEDIUM</td><td>VPC Flow Logs is not enabled for VPC </td><td>git::https:/github.com/terraform-aws-modules/terraform-aws-vpc?ref=26c38a66f12e7c6c93b6a2ba127ad68981a48671/main.tf:29</td></tr>
+</table>
+</body>
+</html>
