@@ -1,0 +1,401 @@
+{
+	"results": [
+		{
+			"rule_id": "AVD-AWS-0020",
+			"long_id": "aws-documentdb-enable-log-export",
+			"rule_description": "DocumentDB logs export should be enabled",
+			"rule_provider": "aws",
+			"rule_service": "documentdb",
+			"impact": "Limited visibility of audit trail for changes to the DocumentDB",
+			"resolution": "Enable export logs",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/documentdb/enable-log-export/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/docdb_cluster#enabled_cloudwatch_logs_exports"
+			],
+			"description": "Neither CloudWatch audit nor profiler log exports are enabled.",
+			"severity": "MEDIUM",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_docdb_cluster.default",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 278,
+				"end_line": 296
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0022",
+			"long_id": "aws-documentdb-encryption-customer-key",
+			"rule_description": "DocumentDB encryption should use Customer Managed Keys",
+			"rule_provider": "aws",
+			"rule_service": "documentdb",
+			"impact": "Using AWS managed keys does not allow for fine grained control",
+			"resolution": "Enable encryption using customer managed keys",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/documentdb/encryption-customer-key/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/docdb_cluster#kms_key_id"
+			],
+			"description": "Instance encryption does not use a customer-managed KMS key.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_docdb_cluster_instance.default[1]",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 298,
+				"end_line": 309
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0022",
+			"long_id": "aws-documentdb-encryption-customer-key",
+			"rule_description": "DocumentDB encryption should use Customer Managed Keys",
+			"rule_provider": "aws",
+			"rule_service": "documentdb",
+			"impact": "Using AWS managed keys does not allow for fine grained control",
+			"resolution": "Enable encryption using customer managed keys",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/documentdb/encryption-customer-key/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/docdb_cluster#kms_key_id"
+			],
+			"description": "Instance encryption does not use a customer-managed KMS key.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_docdb_cluster_instance.default[0]",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 298,
+				"end_line": 309
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0022",
+			"long_id": "aws-documentdb-encryption-customer-key",
+			"rule_description": "DocumentDB encryption should use Customer Managed Keys",
+			"rule_provider": "aws",
+			"rule_service": "documentdb",
+			"impact": "Using AWS managed keys does not allow for fine grained control",
+			"resolution": "Enable encryption using customer managed keys",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/documentdb/encryption-customer-key/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/docdb_cluster#kms_key_id"
+			],
+			"description": "Cluster encryption does not use a customer-managed KMS key.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_docdb_cluster.default",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 278,
+				"end_line": 296
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.docdb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 234,
+				"end_line": 239
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.docdb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 227,
+				"end_line": 232
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.app_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 209,
+				"end_line": 214
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.app_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 194,
+				"end_line": 199
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 175,
+				"end_line": 180
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 168,
+				"end_line": 173
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0124",
+			"long_id": "aws-ec2-add-description-to-security-group-rule",
+			"rule_description": "Missing description for security group rule.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Descriptions provide context for the firewall rule reasons",
+			"resolution": "Add descriptions for all security groups rules",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/add-description-to-security-group-rule/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule"
+			],
+			"description": "Security group rule does not have a description.",
+			"severity": "LOW",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 161,
+				"end_line": 166
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0104",
+			"long_id": "aws-ec2-no-public-egress-sgr",
+			"rule_description": "An egress security group rule allows traffic to /0.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Your port is egressing data to the internet",
+			"resolution": "Set a more restrictive cidr range",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/no-public-egress-sgr/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group"
+			],
+			"description": "Security group rule allows egress to multiple public internet addresses.",
+			"severity": "CRITICAL",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.docdb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 238,
+				"end_line": 238
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0104",
+			"long_id": "aws-ec2-no-public-egress-sgr",
+			"rule_description": "An egress security group rule allows traffic to /0.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Your port is egressing data to the internet",
+			"resolution": "Set a more restrictive cidr range",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/no-public-egress-sgr/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group"
+			],
+			"description": "Security group rule allows egress to multiple public internet addresses.",
+			"severity": "CRITICAL",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.app_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 213,
+				"end_line": 213
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0104",
+			"long_id": "aws-ec2-no-public-egress-sgr",
+			"rule_description": "An egress security group rule allows traffic to /0.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Your port is egressing data to the internet",
+			"resolution": "Set a more restrictive cidr range",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/no-public-egress-sgr/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group"
+			],
+			"description": "Security group rule allows egress to multiple public internet addresses.",
+			"severity": "CRITICAL",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 179,
+				"end_line": 179
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0107",
+			"long_id": "aws-ec2-no-public-ingress-sgr",
+			"rule_description": "An ingress security group rule allows traffic from /0.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Your port exposed to the internet",
+			"resolution": "Set a more restrictive cidr range",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/no-public-ingress-sgr/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule#cidr_blocks"
+			],
+			"description": "Security group rule allows ingress from public internet.",
+			"severity": "CRITICAL",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 172,
+				"end_line": 172
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0107",
+			"long_id": "aws-ec2-no-public-ingress-sgr",
+			"rule_description": "An ingress security group rule allows traffic from /0.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Your port exposed to the internet",
+			"resolution": "Set a more restrictive cidr range",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/no-public-ingress-sgr/",
+				"https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule#cidr_blocks"
+			],
+			"description": "Security group rule allows ingress from public internet.",
+			"severity": "CRITICAL",
+			"warning": false,
+			"status": 0,
+			"resource": "aws_security_group.alb_sg",
+			"location": {
+				"filename": "/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf",
+				"start_line": 165,
+				"end_line": 165
+			}
+		},
+		{
+			"rule_id": "AVD-AWS-0178",
+			"long_id": "aws-ec2-require-vpc-flow-logs-for-all-vpcs",
+			"rule_description": "VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. After you've created a flow log, you can view and retrieve its data in Amazon CloudWatch Logs. It is recommended that VPC Flow Logs be enabled for packet \"Rejects\" for VPCs.",
+			"rule_provider": "aws",
+			"rule_service": "ec2",
+			"impact": "Without VPC flow logs, you risk not having enough information about network traffic flow to investigate incidents or identify security issues.",
+			"resolution": "Enable flow logs for VPC",
+			"links": [
+				"https://aquasecurity.github.io/tfsec/v1.28.1/checks/aws/ec2/require-vpc-flow-logs-for-all-vpcs/"
+			],
+			"description": "VPC Flow Logs is not enabled for VPC ",
+			"severity": "MEDIUM",
+			"warning": false,
+			"status": 0,
+			"resource": "module.vpc",
+			"location": {
+				"filename": "git::https:/github.com/terraform-aws-modules/terraform-aws-vpc?ref=26c38a66f12e7c6c93b6a2ba127ad68981a48671/main.tf",
+				"start_line": 29,
+				"end_line": 52
+			}
+		}
+	]
+}

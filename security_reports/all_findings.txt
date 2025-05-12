@@ -1,0 +1,605 @@
+# Security Scan Findings
+## TFSec Findings
+
+# [tfsec] Results
+## Failed: 17 issue(s)
+| # | ID | Severity | Title | Location | Description |
+|---|----|----------|-------|----------|-------------|
+| 1 | `aws-documentdb-enable-log-export` | *MEDIUM* | _DocumentDB logs export should be enabled_ | `terraform/main.tf:278-296` | Neither CloudWatch audit nor profiler log exports are enabled. |
+| 2 | `aws-documentdb-encryption-customer-key` | *LOW* | _DocumentDB encryption should use Customer Managed Keys_ | `terraform/main.tf:298-309` | Instance encryption does not use a customer-managed KMS key. |
+| 3 | `aws-documentdb-encryption-customer-key` | *LOW* | _DocumentDB encryption should use Customer Managed Keys_ | `terraform/main.tf:298-309` | Instance encryption does not use a customer-managed KMS key. |
+| 4 | `aws-documentdb-encryption-customer-key` | *LOW* | _DocumentDB encryption should use Customer Managed Keys_ | `terraform/main.tf:278-296` | Cluster encryption does not use a customer-managed KMS key. |
+| 5 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:234-239` | Security group rule does not have a description. |
+| 6 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:227-232` | Security group rule does not have a description. |
+| 7 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:209-214` | Security group rule does not have a description. |
+| 8 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:194-199` | Security group rule does not have a description. |
+| 9 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:175-180` | Security group rule does not have a description. |
+| 10 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:168-173` | Security group rule does not have a description. |
+| 11 | `aws-ec2-add-description-to-security-group-rule` | *LOW* | _Missing description for security group rule._ | `terraform/main.tf:161-166` | Security group rule does not have a description. |
+| 12 | `aws-ec2-no-public-egress-sgr` | *CRITICAL* | _An egress security group rule allows traffic to /0._ | `terraform/main.tf:238` | Security group rule allows egress to multiple public internet addresses. |
+| 13 | `aws-ec2-no-public-egress-sgr` | *CRITICAL* | _An egress security group rule allows traffic to /0._ | `terraform/main.tf:213` | Security group rule allows egress to multiple public internet addresses. |
+| 14 | `aws-ec2-no-public-egress-sgr` | *CRITICAL* | _An egress security group rule allows traffic to /0._ | `terraform/main.tf:179` | Security group rule allows egress to multiple public internet addresses. |
+| 15 | `aws-ec2-no-public-ingress-sgr` | *CRITICAL* | _An ingress security group rule allows traffic from /0._ | `terraform/main.tf:172` | Security group rule allows ingress from public internet. |
+| 16 | `aws-ec2-no-public-ingress-sgr` | *CRITICAL* | _An ingress security group rule allows traffic from /0._ | `terraform/main.tf:165` | Security group rule allows ingress from public internet. |
+| 17 | `aws-ec2-require-vpc-flow-logs-for-all-vpcs` | *MEDIUM* | _VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. After you've created a flow log, you can view and retrieve its data in Amazon CloudWatch Logs. It is recommended that VPC Flow Logs be enabled for packet "Rejects" for VPCs._ | `terraform-aws-modules/vpc/aws/main.tf:29-52` | VPC Flow Logs is not enabled for VPC  |
+
+
+## Checkov Findings
+
+       _               _
+   ___| |__   ___  ___| | _______   __
+  / __| '_ \ / _ \/ __| |/ / _ \ \ / /
+ | (__| | | |  __/ (__|   < (_) \ V /
+  \___|_| |_|\___|\___|_|\_\___/ \_/
+
+By Prisma Cloud | version: 3.2.416 
+
+terraform scan results:
+
+Passed checks: 19, Failed checks: 17, Skipped checks: 0
+
+Check: CKV_AWS_277: "Ensure no security groups allow ingress from 0.0.0.0:0 to port -1"
+	PASSED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-group-does-not-allow-all-traffic-on-all-ports
+Check: CKV_AWS_25: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389"
+	PASSED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-2
+Check: CKV_AWS_24: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22"
+	PASSED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-1-port-security
+Check: CKV_AWS_260: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80"
+	PASSED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-groups-do-not-allow-ingress-from-00000-to-port-80
+Check: CKV_AWS_277: "Ensure no security groups allow ingress from 0.0.0.0:0 to port -1"
+	PASSED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-group-does-not-allow-all-traffic-on-all-ports
+Check: CKV_AWS_25: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389"
+	PASSED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-2
+Check: CKV_AWS_24: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22"
+	PASSED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-1-port-security
+Check: CKV_AWS_260: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80"
+	PASSED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-groups-do-not-allow-ingress-from-00000-to-port-80
+Check: CKV_AWS_277: "Ensure no security groups allow ingress from 0.0.0.0:0 to port -1"
+	PASSED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-group-does-not-allow-all-traffic-on-all-ports
+Check: CKV_AWS_25: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 3389"
+	PASSED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-2
+Check: CKV_AWS_24: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 22"
+	PASSED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-1-port-security
+Check: CKV_AWS_74: "Ensure DocumentDB is encrypted at rest (default is unencrypted)"
+	PASSED for resource: aws_docdb_cluster.default
+	File: /terraform/main.tf:278-296
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-28
+Check: CKV_AWS_233: "Ensure Create before destroy for ACM certificates"
+	PASSED for resource: aws_acm_certificate.default[0]
+	File: /terraform/main.tf:350-366
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-acm-certificate-enables-create-before-destroy
+Check: CKV_AWS_234: "Verify logging preference for ACM certificates"
+	PASSED for resource: aws_acm_certificate.default[0]
+	File: /terraform/main.tf:350-366
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-aws-acm-certificates-has-logging-preference
+Check: CKV_TF_2: "Ensure Terraform module sources use a tag with a version number"
+	PASSED for resource: vpc
+	File: /terraform/main.tf:128-151
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/supply-chain-policies/terraform-policies/ensure-terraform-module-sources-use-tag
+Check: CKV_AWS_41: "Ensure no hard coded AWS access key and secret key exists in provider"
+	PASSED for resource: aws.default
+	File: /terraform/main.tf:12-14
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/secrets-policies/bc-aws-secrets-5
+Check: CKV2_AWS_5: "Ensure that Security Groups are attached to another resource"
+	PASSED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-that-security-groups-are-attached-to-ec2-instances-or-elastic-network-interfaces-enis
+Check: CKV2_AWS_71: "Ensure AWS ACM Certificate domain name does not include wildcards"
+	PASSED for resource: aws_acm_certificate.default[0]
+	File: /terraform/main.tf:350-366
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-2-71
+Check: CKV2_AWS_23: "Route53 A Record has Attached Resource"
+	PASSED for resource: aws_route53_record.app_dns[0]
+	File: /terraform/main.tf:571-582
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-route53-a-record-has-an-attached-resource
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+
+		156 | resource "aws_security_group" "alb_sg" {
+		157 |   name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		158 |   description = "Allow HTTP/HTTPS traffic to ALB"
+		159 |   vpc_id      = module.vpc.vpc_id
+		160 | 
+		161 |   ingress {
+		162 |     from_port   = 80
+		163 |     to_port     = 80
+		164 |     protocol    = "tcp"
+		165 |     cidr_blocks = ["0.0.0.0/0"]
+		166 |   }
+		167 | 
+		168 |   ingress {
+		169 |     from_port   = 443
+		170 |     to_port     = 443
+		171 |     protocol    = "tcp"
+		172 |     cidr_blocks = ["0.0.0.0/0"]
+		173 |   }
+		174 | 
+		175 |   egress {
+		176 |     from_port   = 0
+		177 |     to_port     = 0
+		178 |     protocol    = "-1"
+		179 |     cidr_blocks = ["0.0.0.0/0"]
+		180 |   }
+		181 | 
+		182 |   tags = {
+		183 |     Name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		184 |     Environment = var.app_environment
+		185 |   }
+		186 | }
+
+Check: CKV_AWS_260: "Ensure no security groups allow ingress from 0.0.0.0:0 to port 80"
+	FAILED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-aws-security-groups-do-not-allow-ingress-from-00000-to-port-80
+
+		156 | resource "aws_security_group" "alb_sg" {
+		157 |   name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		158 |   description = "Allow HTTP/HTTPS traffic to ALB"
+		159 |   vpc_id      = module.vpc.vpc_id
+		160 | 
+		161 |   ingress {
+		162 |     from_port   = 80
+		163 |     to_port     = 80
+		164 |     protocol    = "tcp"
+		165 |     cidr_blocks = ["0.0.0.0/0"]
+		166 |   }
+		167 | 
+		168 |   ingress {
+		169 |     from_port   = 443
+		170 |     to_port     = 443
+		171 |     protocol    = "tcp"
+		172 |     cidr_blocks = ["0.0.0.0/0"]
+		173 |   }
+		174 | 
+		175 |   egress {
+		176 |     from_port   = 0
+		177 |     to_port     = 0
+		178 |     protocol    = "-1"
+		179 |     cidr_blocks = ["0.0.0.0/0"]
+		180 |   }
+		181 | 
+		182 |   tags = {
+		183 |     Name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		184 |     Environment = var.app_environment
+		185 |   }
+		186 | }
+
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+
+		156 | resource "aws_security_group" "alb_sg" {
+		157 |   name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		158 |   description = "Allow HTTP/HTTPS traffic to ALB"
+		159 |   vpc_id      = module.vpc.vpc_id
+		160 | 
+		161 |   ingress {
+		162 |     from_port   = 80
+		163 |     to_port     = 80
+		164 |     protocol    = "tcp"
+		165 |     cidr_blocks = ["0.0.0.0/0"]
+		166 |   }
+		167 | 
+		168 |   ingress {
+		169 |     from_port   = 443
+		170 |     to_port     = 443
+		171 |     protocol    = "tcp"
+		172 |     cidr_blocks = ["0.0.0.0/0"]
+		173 |   }
+		174 | 
+		175 |   egress {
+		176 |     from_port   = 0
+		177 |     to_port     = 0
+		178 |     protocol    = "-1"
+		179 |     cidr_blocks = ["0.0.0.0/0"]
+		180 |   }
+		181 | 
+		182 |   tags = {
+		183 |     Name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		184 |     Environment = var.app_environment
+		185 |   }
+		186 | }
+
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+
+		188 | resource "aws_security_group" "app_sg" {
+		189 |   name        = "${var.app_name}-app-sg-${var.app_environment}"
+		190 |   description = "Allow traffic from ALB to App instances"
+		191 |   vpc_id      = module.vpc.vpc_id
+		192 | 
+		193 |   # Traffic from ALB
+		194 |   ingress {
+		195 |     from_port       = var.beanstalk_app_port
+		196 |     to_port         = var.beanstalk_app_port
+		197 |     protocol        = "tcp"
+		198 |     security_groups = [aws_security_group.alb_sg.id]
+		199 |   }
+		200 | 
+		201 |   # Allow SSH from a bastion or specific IPs (optional, for debugging)
+		202 |   # ingress {
+		203 |   #   from_port   = 22
+		204 |   #   to_port     = 22
+		205 |   #   protocol    = "tcp"
+		206 |   #   cidr_blocks = ["YOUR_IP_ADDRESS/32"] # Replace with your IP
+		207 |   # }
+		208 | 
+		209 |   egress {
+		210 |     from_port   = 0
+		211 |     to_port     = 0
+		212 |     protocol    = "-1"
+		213 |     cidr_blocks = ["0.0.0.0/0"] # Allows outbound connections to DB, internet via NAT
+		214 |   }
+		215 | 
+		216 |   tags = {
+		217 |     Name        = "${var.app_name}-app-sg-${var.app_environment}"
+		218 |     Environment = var.app_environment
+		219 |   }
+		220 | }
+
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+
+		188 | resource "aws_security_group" "app_sg" {
+		189 |   name        = "${var.app_name}-app-sg-${var.app_environment}"
+		190 |   description = "Allow traffic from ALB to App instances"
+		191 |   vpc_id      = module.vpc.vpc_id
+		192 | 
+		193 |   # Traffic from ALB
+		194 |   ingress {
+		195 |     from_port       = var.beanstalk_app_port
+		196 |     to_port         = var.beanstalk_app_port
+		197 |     protocol        = "tcp"
+		198 |     security_groups = [aws_security_group.alb_sg.id]
+		199 |   }
+		200 | 
+		201 |   # Allow SSH from a bastion or specific IPs (optional, for debugging)
+		202 |   # ingress {
+		203 |   #   from_port   = 22
+		204 |   #   to_port     = 22
+		205 |   #   protocol    = "tcp"
+		206 |   #   cidr_blocks = ["YOUR_IP_ADDRESS/32"] # Replace with your IP
+		207 |   # }
+		208 | 
+		209 |   egress {
+		210 |     from_port   = 0
+		211 |     to_port     = 0
+		212 |     protocol    = "-1"
+		213 |     cidr_blocks = ["0.0.0.0/0"] # Allows outbound connections to DB, internet via NAT
+		214 |   }
+		215 | 
+		216 |   tags = {
+		217 |     Name        = "${var.app_name}-app-sg-${var.app_environment}"
+		218 |     Environment = var.app_environment
+		219 |   }
+		220 | }
+
+Check: CKV_AWS_382: "Ensure no security groups allow egress from 0.0.0.0:0 to port -1"
+	FAILED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-382
+
+		222 | resource "aws_security_group" "docdb_sg" {
+		223 |   name        = "${var.app_name}-docdb-sg-${var.app_environment}"
+		224 |   description = "Allow traffic from App to DocumentDB"
+		225 |   vpc_id      = module.vpc.vpc_id
+		226 | 
+		227 |   ingress {
+		228 |     from_port       = 27017 # MongoDB default port
+		229 |     to_port         = 27017
+		230 |     protocol        = "tcp"
+		231 |     security_groups = [aws_security_group.app_sg.id]
+		232 |   }
+		233 | 
+		234 |   egress { # Typically not needed for DBs unless they initiate connections
+		235 |     from_port   = 0
+		236 |     to_port     = 0
+		237 |     protocol    = "-1"
+		238 |     cidr_blocks = ["0.0.0.0/0"]
+		239 |   }
+		240 | 
+		241 |   tags = {
+		242 |     Name        = "${var.app_name}-docdb-sg-${var.app_environment}"
+		243 |     Environment = var.app_environment
+		244 |   }
+		245 | }
+
+Check: CKV_AWS_23: "Ensure every security group and rule has a description"
+	FAILED for resource: aws_security_group.docdb_sg
+	File: /terraform/main.tf:222-245
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/networking-31
+
+		222 | resource "aws_security_group" "docdb_sg" {
+		223 |   name        = "${var.app_name}-docdb-sg-${var.app_environment}"
+		224 |   description = "Allow traffic from App to DocumentDB"
+		225 |   vpc_id      = module.vpc.vpc_id
+		226 | 
+		227 |   ingress {
+		228 |     from_port       = 27017 # MongoDB default port
+		229 |     to_port         = 27017
+		230 |     protocol        = "tcp"
+		231 |     security_groups = [aws_security_group.app_sg.id]
+		232 |   }
+		233 | 
+		234 |   egress { # Typically not needed for DBs unless they initiate connections
+		235 |     from_port   = 0
+		236 |     to_port     = 0
+		237 |     protocol    = "-1"
+		238 |     cidr_blocks = ["0.0.0.0/0"]
+		239 |   }
+		240 | 
+		241 |   tags = {
+		242 |     Name        = "${var.app_name}-docdb-sg-${var.app_environment}"
+		243 |     Environment = var.app_environment
+		244 |   }
+		245 | }
+
+Check: CKV_AWS_90: "Ensure DocumentDB TLS is not disabled"
+	FAILED for resource: aws_docdb_cluster_parameter_group.default
+	File: /terraform/main.tf:260-276
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/bc-aws-networking-37
+
+		260 | resource "aws_docdb_cluster_parameter_group" "default" {
+		261 |   family      = "docdb4.0" # Or "docdb5.0" - check latest available
+		262 |   name        = "${var.app_name}-docdb-cluster-pg-${var.app_environment}"
+		263 |   description = "DocumentDB cluster parameter group for ${var.app_name}"
+		264 | 
+		265 |   parameter {
+		266 |     name  = "tls"
+		267 |     value = "disabled" # Set to "enabled" for production and configure your app client
+		268 |                        # For simplicity in this template, it's disabled.
+		269 |                        # Enabling TLS requires client-side configuration.
+		270 |   }
+		271 | 
+		272 |   tags = {
+		273 |     Name        = "${var.app_name}-docdb-cluster-pg-${var.app_environment}"
+		274 |     Environment = var.app_environment
+		275 |   }
+		276 | }
+
+Check: CKV_AWS_104: "Ensure DocumentDB has audit logs enabled"
+	FAILED for resource: aws_docdb_cluster_parameter_group.default
+	File: /terraform/main.tf:260-276
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/ensure-docdb-has-audit-logs-enabled
+
+		260 | resource "aws_docdb_cluster_parameter_group" "default" {
+		261 |   family      = "docdb4.0" # Or "docdb5.0" - check latest available
+		262 |   name        = "${var.app_name}-docdb-cluster-pg-${var.app_environment}"
+		263 |   description = "DocumentDB cluster parameter group for ${var.app_name}"
+		264 | 
+		265 |   parameter {
+		266 |     name  = "tls"
+		267 |     value = "disabled" # Set to "enabled" for production and configure your app client
+		268 |                        # For simplicity in this template, it's disabled.
+		269 |                        # Enabling TLS requires client-side configuration.
+		270 |   }
+		271 | 
+		272 |   tags = {
+		273 |     Name        = "${var.app_name}-docdb-cluster-pg-${var.app_environment}"
+		274 |     Environment = var.app_environment
+		275 |   }
+		276 | }
+
+Check: CKV_AWS_85: "Ensure DocumentDB Logging is enabled"
+	FAILED for resource: aws_docdb_cluster.default
+	File: /terraform/main.tf:278-296
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/logging-19
+
+		278 | resource "aws_docdb_cluster" "default" {
+		279 |   cluster_identifier              = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		280 |   engine                          = "docdb"
+		281 |   master_username                 = var.docdb_master_username
+		282 |   master_password                 = var.docdb_master_password
+		283 |   db_subnet_group_name            = aws_docdb_subnet_group.default.name
+		284 |   vpc_security_group_ids          = [aws_security_group.docdb_sg.id]
+		285 |   skip_final_snapshot             = var.app_environment == "dev" ? true : false # Take snapshot for prod
+		286 |   db_cluster_parameter_group_name = aws_docdb_cluster_parameter_group.default.name
+		287 |   backup_retention_period         = var.app_environment == "prod" ? 7 : 1 # Adjust as needed
+		288 |   preferred_backup_window         = "07:00-09:00"
+		289 |   storage_encrypted               = true # Recommended
+		290 |   # engine_version = "4.0.0" # Specify if needed, otherwise uses default for the family
+		291 | 
+		292 |   tags = {
+		293 |     Name        = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		294 |     Environment = var.app_environment
+		295 |   }
+		296 | }
+
+Check: CKV_AWS_182: "Ensure DocumentDB is encrypted by KMS using a customer managed Key (CMK)"
+	FAILED for resource: aws_docdb_cluster.default
+	File: /terraform/main.tf:278-296
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-general-102
+
+		278 | resource "aws_docdb_cluster" "default" {
+		279 |   cluster_identifier              = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		280 |   engine                          = "docdb"
+		281 |   master_username                 = var.docdb_master_username
+		282 |   master_password                 = var.docdb_master_password
+		283 |   db_subnet_group_name            = aws_docdb_subnet_group.default.name
+		284 |   vpc_security_group_ids          = [aws_security_group.docdb_sg.id]
+		285 |   skip_final_snapshot             = var.app_environment == "dev" ? true : false # Take snapshot for prod
+		286 |   db_cluster_parameter_group_name = aws_docdb_cluster_parameter_group.default.name
+		287 |   backup_retention_period         = var.app_environment == "prod" ? 7 : 1 # Adjust as needed
+		288 |   preferred_backup_window         = "07:00-09:00"
+		289 |   storage_encrypted               = true # Recommended
+		290 |   # engine_version = "4.0.0" # Specify if needed, otherwise uses default for the family
+		291 | 
+		292 |   tags = {
+		293 |     Name        = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		294 |     Environment = var.app_environment
+		295 |   }
+		296 | }
+
+Check: CKV_AWS_360: "Ensure DocumentDB has an adequate backup retention period"
+	FAILED for resource: aws_docdb_cluster.default
+	File: /terraform/main.tf:278-296
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-360
+
+		278 | resource "aws_docdb_cluster" "default" {
+		279 |   cluster_identifier              = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		280 |   engine                          = "docdb"
+		281 |   master_username                 = var.docdb_master_username
+		282 |   master_password                 = var.docdb_master_password
+		283 |   db_subnet_group_name            = aws_docdb_subnet_group.default.name
+		284 |   vpc_security_group_ids          = [aws_security_group.docdb_sg.id]
+		285 |   skip_final_snapshot             = var.app_environment == "dev" ? true : false # Take snapshot for prod
+		286 |   db_cluster_parameter_group_name = aws_docdb_cluster_parameter_group.default.name
+		287 |   backup_retention_period         = var.app_environment == "prod" ? 7 : 1 # Adjust as needed
+		288 |   preferred_backup_window         = "07:00-09:00"
+		289 |   storage_encrypted               = true # Recommended
+		290 |   # engine_version = "4.0.0" # Specify if needed, otherwise uses default for the family
+		291 | 
+		292 |   tags = {
+		293 |     Name        = "${var.app_name}-docdb-cluster-${var.app_environment}"
+		294 |     Environment = var.app_environment
+		295 |   }
+		296 | }
+
+Check: CKV_AWS_312: "Ensure Elastic Beanstalk environments have enhanced health reporting enabled"
+	FAILED for resource: aws_elastic_beanstalk_environment.default
+	File: /terraform/main.tf:387-566
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-312
+
+		Code lines for this resource are too many. Please use IDE of your choice to review the file.
+Check: CKV_AWS_340: "Ensure Elastic Beanstalk managed platform updates are enabled"
+	FAILED for resource: aws_elastic_beanstalk_environment.default
+	File: /terraform/main.tf:387-566
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-general-policies/bc-aws-340
+
+		Code lines for this resource are too many. Please use IDE of your choice to review the file.
+Check: CKV_TF_1: "Ensure Terraform module sources use a commit hash"
+	FAILED for resource: vpc
+	File: /terraform/main.tf:128-151
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/supply-chain-policies/terraform-policies/ensure-terraform-module-sources-use-git-url-with-commit-hash-revision
+
+		128 | module "vpc" {
+		129 |   source  = "terraform-aws-modules/vpc/aws"
+		130 |   version = "~> 5.0" # Use a recent version
+		131 | 
+		132 |   name = "${var.app_name}-vpc-${var.app_environment}"
+		133 |   cidr = var.vpc_cidr
+		134 | 
+		135 |   azs             = local.azs
+		136 |   public_subnets  = var.public_subnet_cidrs
+		137 |   private_subnets = var.private_subnet_cidrs
+		138 | 
+		139 |   enable_nat_gateway   = true
+		140 |   single_nat_gateway   = var.docdb_instances_count < 2 # For cost saving in dev with single DB, otherwise use one NAT per AZ
+		141 |   one_nat_gateway_per_az = var.docdb_instances_count >= 2 # Recommended for HA
+		142 | 
+		143 |   enable_dns_hostnames = true
+		144 |   enable_dns_support   = true
+		145 | 
+		146 |   tags = {
+		147 |     Terraform   = "true"
+		148 |     Environment = var.app_environment
+		149 |     Application = var.app_name
+		150 |   }
+		151 | }
+
+Check: CKV2_AWS_5: "Ensure that Security Groups are attached to another resource"
+	FAILED for resource: aws_security_group.alb_sg
+	File: /terraform/main.tf:156-186
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-that-security-groups-are-attached-to-ec2-instances-or-elastic-network-interfaces-enis
+
+		156 | resource "aws_security_group" "alb_sg" {
+		157 |   name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		158 |   description = "Allow HTTP/HTTPS traffic to ALB"
+		159 |   vpc_id      = module.vpc.vpc_id
+		160 | 
+		161 |   ingress {
+		162 |     from_port   = 80
+		163 |     to_port     = 80
+		164 |     protocol    = "tcp"
+		165 |     cidr_blocks = ["0.0.0.0/0"]
+		166 |   }
+		167 | 
+		168 |   ingress {
+		169 |     from_port   = 443
+		170 |     to_port     = 443
+		171 |     protocol    = "tcp"
+		172 |     cidr_blocks = ["0.0.0.0/0"]
+		173 |   }
+		174 | 
+		175 |   egress {
+		176 |     from_port   = 0
+		177 |     to_port     = 0
+		178 |     protocol    = "-1"
+		179 |     cidr_blocks = ["0.0.0.0/0"]
+		180 |   }
+		181 | 
+		182 |   tags = {
+		183 |     Name        = "${var.app_name}-alb-sg-${var.app_environment}"
+		184 |     Environment = var.app_environment
+		185 |   }
+		186 | }
+
+Check: CKV2_AWS_5: "Ensure that Security Groups are attached to another resource"
+	FAILED for resource: aws_security_group.app_sg
+	File: /terraform/main.tf:188-220
+	Guide: https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies/ensure-that-security-groups-are-attached-to-ec2-instances-or-elastic-network-interfaces-enis
+
+		188 | resource "aws_security_group" "app_sg" {
+		189 |   name        = "${var.app_name}-app-sg-${var.app_environment}"
+		190 |   description = "Allow traffic from ALB to App instances"
+		191 |   vpc_id      = module.vpc.vpc_id
+		192 | 
+		193 |   # Traffic from ALB
+		194 |   ingress {
+		195 |     from_port       = var.beanstalk_app_port
+		196 |     to_port         = var.beanstalk_app_port
+		197 |     protocol        = "tcp"
+		198 |     security_groups = [aws_security_group.alb_sg.id]
+		199 |   }
+		200 | 
+		201 |   # Allow SSH from a bastion or specific IPs (optional, for debugging)
+		202 |   # ingress {
+		203 |   #   from_port   = 22
+		204 |   #   to_port     = 22
+		205 |   #   protocol    = "tcp"
+		206 |   #   cidr_blocks = ["YOUR_IP_ADDRESS/32"] # Replace with your IP
+		207 |   # }
+		208 | 
+		209 |   egress {
+		210 |     from_port   = 0
+		211 |     to_port     = 0
+		212 |     protocol    = "-1"
+		213 |     cidr_blocks = ["0.0.0.0/0"] # Allows outbound connections to DB, internet via NAT
+		214 |   }
+		215 | 
+		216 |   tags = {
+		217 |     Name        = "${var.app_name}-app-sg-${var.app_environment}"
+		218 |     Environment = var.app_environment
+		219 |   }
+		220 | }
+
+
