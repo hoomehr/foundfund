@@ -1,0 +1,57 @@
+<html>
+<head>
+    <title>TFSec Security Report</title>
+    <style>
+        body{font-family:Arial,sans-serif;margin:20px}
+        h1{color:#333}
+        table{border-collapse:collapse;width:100%}
+        th,td{text-align:left;padding:8px;border:1px solid #ddd}
+        th{background-color:#f2f2f2}
+        tr:nth-child(even){background-color:#f9f9f9}
+        .critical{background-color:#ffdddd}
+        .high{background-color:#ffffcc}
+        .medium{background-color:#e6f3ff}
+        .low{background-color:#eaffea}
+    </style>
+</head>
+<body>
+    <h1>TFSec Security Scan Results</h1>
+<h2>Found 33 potential security issues</h2>
+<table>
+<tr><th>Rule ID</th><th>Severity</th><th>Description</th><th>Location</th></tr>
+<tr class="low"><td>AVD-AWS-0017</td><td>LOW</td><td>Log group is not encrypted.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:332</td></tr>
+<tr class="medium"><td>AVD-AWS-0020</td><td>MEDIUM</td><td>Neither CloudWatch audit nor profiler log exports are enabled.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:516</td></tr>
+<tr class="high"><td>AVD-AWS-0021</td><td>HIGH</td><td>Cluster storage does not have encryption enabled.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:516</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Instance encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:532</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Instance encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:532</td></tr>
+<tr class="low"><td>AVD-AWS-0022</td><td>LOW</td><td>Cluster encryption does not use a customer-managed KMS key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:516</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:254</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:248</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:233</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:227</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:212</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:206</td></tr>
+<tr class="low"><td>AVD-AWS-0124</td><td>LOW</td><td>Security group rule does not have a description.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:200</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:258</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:237</td></tr>
+<tr class="critical"><td>AVD-AWS-0104</td><td>CRITICAL</td><td>Security group rule allows egress to multiple public internet addresses.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:216</td></tr>
+<tr class="critical"><td>AVD-AWS-0107</td><td>CRITICAL</td><td>Security group rule allows ingress from public internet.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:210</td></tr>
+<tr class="critical"><td>AVD-AWS-0107</td><td>CRITICAL</td><td>Security group rule allows ingress from public internet.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:204</td></tr>
+<tr class="medium"><td>AVD-AWS-0178</td><td>MEDIUM</td><td>VPC Flow Logs is not enabled for VPC </td><td>git::https:/github.com/terraform-aws-modules/terraform-aws-vpc?ref=7666869d9ca7ff658f5bd10a29dea53bde5dc464/main.tf:28</td></tr>
+<tr class="high"><td>AVD-AWS-0031</td><td>HIGH</td><td>Repository tags are mutable.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:268</td></tr>
+<tr class="low"><td>AVD-AWS-0033</td><td>LOW</td><td>Repository is not encrypted using KMS.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:266</td></tr>
+<tr class="low"><td>AVD-AWS-0034</td><td>LOW</td><td>Cluster does not have container insights enabled.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:280</td></tr>
+<tr class="high"><td>AVD-AWS-0053</td><td>HIGH</td><td>Load balancer is exposed publicly.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:384</td></tr>
+<tr class="high"><td>AVD-AWS-0052</td><td>HIGH</td><td>Application load balancer is not set to drop invalid headers.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:382</td></tr>
+<tr class="high"><td>AVD-AWS-0086</td><td>HIGH</td><td>Public access block does not block public ACLs</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:564</td></tr>
+<tr class="high"><td>AVD-AWS-0087</td><td>HIGH</td><td>Public access block does not block public policies</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:565</td></tr>
+<tr class="high"><td>AVD-AWS-0088</td><td>HIGH</td><td>Bucket does not have encryption enabled</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:545</td></tr>
+<tr class="medium"><td>AVD-AWS-0089</td><td>MEDIUM</td><td>Bucket does not have logging enabled</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:545</td></tr>
+<tr class="medium"><td>AVD-AWS-0090</td><td>MEDIUM</td><td>Bucket does not have versioning enabled</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:545</td></tr>
+<tr class="high"><td>AVD-AWS-0132</td><td>HIGH</td><td>Bucket does not encrypt data with a customer managed key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:545</td></tr>
+<tr class="high"><td>AVD-AWS-0091</td><td>HIGH</td><td>Public access block does not ignore public ACLs</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:566</td></tr>
+<tr class="high"><td>AVD-AWS-0093</td><td>HIGH</td><td>Public access block does not restrict public buckets</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:567</td></tr>
+<tr class="low"><td>AVD-AWS-0098</td><td>LOW</td><td>Secret explicitly uses the default key.</td><td>/home/runner/work/InfraMate/InfraMate/target_repo/terraform/main.tf:492</td></tr>
+</table>
+</body>
+</html>
