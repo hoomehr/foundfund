@@ -91,40 +91,32 @@ export async function getCampaigns(params?: {
   }
 
   try {
-    console.log(`Fetching campaigns with params:`, params);
     const response = await fetch(url);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error fetching campaigns:`, errorData);
       throw new Error('Failed to fetch campaigns');
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched ${data.length} campaigns`);
     return data;
   } catch (error) {
-    console.error(`Error in getCampaigns:`, error);
     throw error;
   }
 }
 
 export async function getCampaignById(id: string): Promise<FundItem> {
   try {
-    console.log(`Fetching campaign with id ${id}`);
     const response = await fetch(`${API_BASE}/campaigns/${id}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error fetching campaign ${id}:`, errorData);
       throw new Error(`Failed to fetch campaign with id ${id}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched campaign ${id}`);
     return data;
   } catch (error) {
-    console.error(`Error in getCampaignById(${id}):`, error);
     throw error;
   }
 }
@@ -135,7 +127,6 @@ export async function getCampaignsByCreator(creatorId: string): Promise<FundItem
 
 export async function setFeaturedStatus(id: string, featured: boolean): Promise<FundItem> {
   try {
-    console.log(`Setting featured status for campaign ${id} to ${featured}`);
     const response = await fetch(`${API_BASE}/campaigns/feature`, {
       method: 'POST',
       headers: {
@@ -146,15 +137,12 @@ export async function setFeaturedStatus(id: string, featured: boolean): Promise<
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error setting featured status for campaign ${id}:`, errorData);
       throw new Error(`Failed to set featured status for campaign ${id}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully set featured status for campaign ${id}`);
     return data;
   } catch (error) {
-    console.error(`Error in setFeaturedStatus(${id}):`, error);
     throw error;
   }
 }
@@ -188,20 +176,16 @@ export async function getContributions(params?: {
   }
 
   try {
-    console.log(`Fetching contributions with params:`, params);
     const response = await fetch(url);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error fetching contributions:`, errorData);
       throw new Error('Failed to fetch contributions');
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched ${data.length} contributions`);
     return data;
   } catch (error) {
-    console.error(`Error in getContributions:`, error);
     throw error;
   }
 }
@@ -216,15 +200,11 @@ export async function getContributionsByUser(userId: string): Promise<Contributi
 
 export async function getContributionsByContributor(contributorId: string): Promise<Contribution[]> {
   try {
-    console.log(`Getting contributions for contributor ID: ${contributorId}`);
-
     // First try with contributorId
     const contributionsWithContributorId = await getContributions({ contributorId });
-    console.log(`Found ${contributionsWithContributorId.length} contributions with contributorId`);
 
     // Then try with userId
     const contributionsWithUserId = await getContributions({ userId: contributorId });
-    console.log(`Found ${contributionsWithUserId.length} contributions with userId`);
 
     // Combine results, removing duplicates by ID
     const allContributions = [...contributionsWithContributorId];
@@ -236,17 +216,14 @@ export async function getContributionsByContributor(contributorId: string): Prom
       }
     }
 
-    console.log(`Total unique contributions found: ${allContributions.length}`);
     return allContributions;
   } catch (error) {
-    console.error('Error in getContributionsByContributor:', error);
     throw error;
   }
 }
 
 export async function createContribution(contribution: Partial<Contribution>): Promise<Contribution> {
   try {
-    console.log(`Creating contribution for campaign ${contribution.campaignId}`);
     const response = await fetch(`${API_BASE}/contributions`, {
       method: 'POST',
       headers: {
@@ -257,15 +234,12 @@ export async function createContribution(contribution: Partial<Contribution>): P
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error creating contribution:`, errorData);
       throw new Error(`Failed to create contribution: ${errorData?.error || response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully created contribution`);
     return data;
   } catch (error) {
-    console.error(`Error in createContribution:`, error);
     throw error;
   }
 }
@@ -278,7 +252,6 @@ export async function createStripeCheckoutSession(data: {
   anonymous?: boolean;
 }): Promise<{ sessionId: string; url: string }> {
   try {
-    console.log(`Creating Stripe checkout session for campaign ${data.campaignId}`);
     const response = await fetch(`${API_BASE}/stripe/checkout`, {
       method: 'POST',
       headers: {
@@ -289,15 +262,12 @@ export async function createStripeCheckoutSession(data: {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error creating Stripe checkout session:`, errorData);
       throw new Error(`Failed to create checkout session: ${errorData?.error || response.statusText}`);
     }
 
     const responseData = await response.json();
-    console.log(`Successfully created Stripe checkout session`);
     return responseData;
   } catch (error) {
-    console.error(`Error in createStripeCheckoutSession:`, error);
     throw error;
   }
 }
@@ -341,47 +311,38 @@ export async function getTransactions(params?: {
   }
 
   try {
-    console.log(`Fetching transactions with params:`, params);
     const response = await fetch(url);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error fetching transactions:`, errorData);
       throw new Error('Failed to fetch transactions');
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched ${data.length} transactions`);
     return data;
   } catch (error) {
-    console.error(`Error in getTransactions:`, error);
     throw error;
   }
 }
 
 export async function getTransactionById(id: string): Promise<Transaction> {
   try {
-    console.log(`Fetching transaction with id ${id}`);
     const response = await fetch(`${API_BASE}/transactions/${id}`);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error fetching transaction ${id}:`, errorData);
       throw new Error(`Failed to fetch transaction with id ${id}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully fetched transaction ${id}`);
     return data;
   } catch (error) {
-    console.error(`Error in getTransactionById(${id}):`, error);
     throw error;
   }
 }
 
 export async function createTransaction(transaction: Partial<Transaction>): Promise<Transaction> {
   try {
-    console.log(`Creating transaction for campaign ${transaction.campaignId}`);
     const response = await fetch(`${API_BASE}/transactions`, {
       method: 'POST',
       headers: {
@@ -392,22 +353,18 @@ export async function createTransaction(transaction: Partial<Transaction>): Prom
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error creating transaction:`, errorData);
       throw new Error(`Failed to create transaction: ${errorData?.error || response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully created transaction`);
     return data;
   } catch (error) {
-    console.error(`Error in createTransaction:`, error);
     throw error;
   }
 }
 
 export async function updateTransaction(id: string, updates: Partial<Transaction>): Promise<Transaction> {
   try {
-    console.log(`Updating transaction ${id}`);
     const response = await fetch(`${API_BASE}/transactions/${id}`, {
       method: 'PATCH',
       headers: {
@@ -418,15 +375,12 @@ export async function updateTransaction(id: string, updates: Partial<Transaction
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error(`Error updating transaction ${id}:`, errorData);
       throw new Error(`Failed to update transaction: ${errorData?.error || response.statusText}`);
     }
 
     const data = await response.json();
-    console.log(`Successfully updated transaction ${id}`);
     return data;
   } catch (error) {
-    console.error(`Error in updateTransaction(${id}):`, error);
     throw error;
   }
 }

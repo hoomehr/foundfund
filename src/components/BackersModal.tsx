@@ -50,7 +50,7 @@ export default function BackersModal({
 
           setUsers(userMap);
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          // Silently handle error
         } finally {
           setLoading(false);
         }

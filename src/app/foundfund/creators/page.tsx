@@ -29,11 +29,8 @@ export default function CreatorsPage() {
 
       try {
         setLoading(true);
-        console.log('Fetching campaigns for user:', user.id);
-
         // Use 'user1' for demo purposes to match mock data
         const userId = user.id === '68007dd6b8d75134f41c88a8' ? 'user1' : user.id;
-        console.log('Using userId for API call:', userId);
 
         const campaigns = await getCampaignsByCreator(userId);
 
@@ -48,7 +45,6 @@ export default function CreatorsPage() {
               }
               return campaign;
             } catch (error) {
-              console.error(`Error fetching contributions for campaign ${campaign.id}:`, error);
               return campaign;
             }
           })
@@ -57,7 +53,6 @@ export default function CreatorsPage() {
         setUserCampaigns(campaignsWithContributions || []);
         setError(null);
       } catch (err) {
-        console.error('Error fetching data:', err);
         setError('Failed to load your campaigns. Please try again later.');
       } finally {
         setLoading(false);

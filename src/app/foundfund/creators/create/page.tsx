@@ -13,7 +13,6 @@ export default function CreateCampaignPage() {
 
   // Redirect to login if not authenticated
   React.useEffect(() => {
-    console.log('Authentication status:', { isAuthenticated, user });
     if (!isAuthenticated) {
       router.push('/foundfund/login?callbackUrl=/foundfund/creators/create');
     }
@@ -32,8 +31,6 @@ export default function CreateCampaignPage() {
         publishedAt: new Date().toISOString(),
       };
 
-      console.log('Creating new campaign:', newCampaign);
-
       // Make API call to create campaign
       const response = await fetch('/api/campaigns', {
         method: 'POST',
@@ -48,16 +45,12 @@ export default function CreateCampaignPage() {
       try {
         responseData = await response.json();
       } catch (parseError) {
-        console.error('Error parsing response:', parseError);
         throw new Error('Failed to parse server response');
       }
 
       if (!response.ok) {
-        console.error('Error response from server:', responseData);
         throw new Error(responseData.error || 'Failed to create campaign');
       }
-
-      console.log('Campaign created successfully:', responseData);
 
       // Show success message
       alert(`Campaign "${formData.name}" created successfully!`);
@@ -65,7 +58,6 @@ export default function CreateCampaignPage() {
       // Navigate to the creator dashboard
       router.push('/foundfund/creators');
     } catch (error: any) {
-      console.error('Error creating campaign:', error);
       alert(`There was an error creating your campaign: ${error.message || 'Please try again.'}`);
     }
   };

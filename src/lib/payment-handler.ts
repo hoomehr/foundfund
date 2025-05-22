@@ -43,122 +43,43 @@ export async function handleSuccessfulPayment({
   message = '',
   anonymous = false
 }: PaymentParams): Promise<PaymentResult> {
-  console.log('=== PAYMENT HANDLER - PROCESSING PAYMENT ===');
-  console.log('Timestamp:', new Date().toISOString());
-  console.log('Session ID:', sessionId);
-  console.log('Campaign ID:', campaignId);
-  console.log('User ID:', userId);
-  console.log('Amount:', amount);
-  console.log('Message:', message || 'N/A');
-  console.log('Anonymous:', anonymous ? 'Yes' : 'No');
-
   // Validate required parameters
   if (!sessionId || !campaignId || !userId || !amount) {
     throw new Error('Missing required parameters: sessionId, campaignId, userId, amount');
   }
 
   // Check MongoDB connection
-  console.log('MongoDB connection state:',
-    mongoose.connection.readyState,
-    getConnectionStateDescription(mongoose.connection.readyState)
-  );
-
   if (mongoose.connection.readyState !== 1) {
-    console.log('MongoDB not connected, attempting to connect...');
     try {
       // Import connectToDatabase dynamically to avoid circular dependencies
       const { connectToDatabase } = await import('@/models');
       await connectToDatabase();
 
-      console.log('MongoDB connection state after connecting:',
-        mongoose.connection.readyState,
-        getConnectionStateDescription(mongoose.connection.readyState)
-      );
-
       if (mongoose.connection.readyState === 1) {
-        console.log('✅ Successfully connected to MongoDB');
-        console.log('MongoDB database name:', mongoose.connection.db?.databaseName);
-
-        // List available collections
-        try {
-          if (mongoose.connection.db) {
-            const collections = await mongoose.connection.db.listCollections().toArray();
-            console.log('Available collections:', collections.map(c => c.name));
-          } else {
-            console.error('❌ MongoDB database connection not established (db is undefined)');
-          }
-        } catch (collError) {
-          console.error('❌ Error listing collections:', collError);
-        }
+        // Connection successful
       } else {
-        console.error('❌ Failed to connect to MongoDB properly. Connection state:',
-          mongoose.connection.readyState,
-          getConnectionStateDescription(mongoose.connection.readyState)
-        );
         throw new Error(`Failed to connect to MongoDB. Connection state: ${mongoose.connection.readyState}`);
       }
     } catch (error) {
-      console.error('❌ Failed to connect to MongoDB:', error);
-
-      if (error instanceof Error) {
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-      }
-
       throw new Error('Failed to connect to MongoDB');
-    }
-  } else {
-    console.log('✅ MongoDB already connected');
-    console.log('MongoDB database name:', mongoose.connection.db?.databaseName);
-
-    // List available collections
-    try {
-      if (mongoose.connection.db) {
-        const collections = await mongoose.connection.db.listCollections().toArray();
-        console.log('Available collections:', collections.map(c => c.name));
-      } else {
-        console.error('❌ MongoDB database connection not established (db is undefined)');
-      }
-    } catch (collError) {
-      console.error('❌ Error listing collections:', collError);
     }
   }
 
   // 1. Check if contribution already exists
-  console.log(`Checking for existing contribution with session ID: ${sessionId}`);
-
-  // Ensure db is defined
   if (!mongoose.connection.db) {
-    console.error('❌ MongoDB database connection not established (db is undefined)');
     throw new Error('MongoDB database connection not established');
   }
 
   let existingContribution;
   try {
-    console.log('Querying contributions collection for session ID:', sessionId);
     existingContribution = await mongoose.connection.db.collection('contributions').findOne({
       stripeSessionId: sessionId
     });
-    console.log('Query result:', existingContribution ? 'Found contribution' : 'No contribution found');
   } catch (queryError) {
-    console.error('❌ Error querying for existing contribution:', queryError);
-
-    if (queryError instanceof Error) {
-      console.error('Error name:', queryError.name);
-      console.error('Error message:', queryError.message);
-      console.error('Error stack:', queryError.stack);
-    }
-
     throw new Error(`Failed to query for existing contribution: ${queryError instanceof Error ? queryError.message : 'Unknown error'}`);
   }
 
   if (existingContribution) {
-    console.log('✅ Contribution already exists:');
-    console.log('  ID:', existingContribution._id);
-    console.log('  Custom ID:', existingContribution.id);
-    console.log('  Amount:', existingContribution.amount);
-    console.log('  Created At:', existingContribution.createdAt);
 
     // Find campaign to return with the existing contribution
     const campaign = await mongoose.connection.db.collection('funditems').findOne({

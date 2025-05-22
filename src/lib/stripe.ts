@@ -10,10 +10,8 @@ let stripePromise: Promise<StripeClient | null>;
 
 export const getStripe = () => {
   if (!stripePromise && stripePublicKey) {
-    console.log('Initializing Stripe with public key');
     stripePromise = loadStripe(stripePublicKey);
   } else if (!stripePublicKey) {
-    console.error('Stripe public key is not defined in environment variables');
     return Promise.resolve(null);
   }
   return stripePromise;

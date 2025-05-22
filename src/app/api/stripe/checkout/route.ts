@@ -12,15 +12,12 @@ if (stripeSecretKey) {
   stripe = new Stripe(stripeSecretKey, {
     apiVersion: '2023-10-16',
   });
-} else {
-  console.error('STRIPE_SECRET_KEY is not defined in environment variables');
 }
 
 export async function POST(request: Request) {
   try {
     // Check if Stripe is initialized
     if (!stripe) {
-      console.error('Stripe is not initialized. Check your environment variables.');
       return NextResponse.json(
         { error: 'Stripe is not configured properly. Please contact the administrator.' },
         { status: 500 }
